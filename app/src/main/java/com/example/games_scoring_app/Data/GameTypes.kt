@@ -1,0 +1,14 @@
+package com.example.games_scoring_app.Data
+
+import androidx.room.ColumnInfo
+import androidx.room.Entity
+import androidx.room.PrimaryKey
+
+@Entity(tableName = "gameTypes")
+data class GameTypes(
+    @PrimaryKey(autoGenerate = true) val id: Int,
+    @ColumnInfo(name = "name") val name: String,
+    @ColumnInfo(name = "max_Players") val maxPlayers: Int,
+    @ColumnInfo(name = "min_Players") val minPlayers: Int,
+    @ColumnInfo(name = "max_Score") val maxScore: Int,
+)

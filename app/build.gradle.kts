@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    id("kotlin-kapt")
 }
 
 android {
@@ -49,6 +50,8 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
+    implementation(libs.androidx.ui.text.google.fonts)
+    implementation(libs.androidx.navigation.compose)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -56,4 +59,19 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
+
+    implementation("com.google.accompanist:accompanist-systemuicontroller:0.34.0")
+    implementation("androidx.compose.ui:ui-text-google-fonts:1.7.8")
+
+    val roomversion = "2.6.1"
+
+    implementation("androidx.room:room-runtime:$roomversion")
+    annotationProcessor("androidx.room:room-compiler:$roomversion")
+    kapt("androidx.room:room-compiler:$roomversion")
+    implementation("androidx.room:room-ktx:$roomversion")
+    implementation("androidx.room:room-rxjava2:$roomversion")
+    implementation("androidx.room:room-rxjava3:$roomversion")
+    implementation("androidx.room:room-guava:$roomversion")
+    testImplementation("androidx.room:room-testing:$roomversion")
+    implementation("androidx.room:room-paging:$roomversion")
 }
