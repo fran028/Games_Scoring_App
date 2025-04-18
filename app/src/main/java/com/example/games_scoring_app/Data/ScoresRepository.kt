@@ -22,7 +22,7 @@ class ScoresRepository(private val scoresDao: ScoresDao) {
         return scoresDao.getScoreById(id)
     }
 
-    fun getScoresByPlayerId(id_player: Int): List<Scores> {
+    suspend fun getScoresByPlayerId(id_player: Int): Scores {
         return scoresDao.getScoresByPlayerId(id_player)
     }
 

@@ -96,12 +96,15 @@ fun MainScreen() {
                     route = Screen.Game.route,
                     arguments = listOf(
                         navArgument("game_id") { type = NavType.IntType }
+                        ,navArgument("new") { type = NavType.BoolType }
                     )
                 ) { backStackEntry ->
                     val gameid = backStackEntry.arguments?.getInt("game_id") ?: 0
+                    val new = backStackEntry.arguments?.getBoolean("new") ?: true
                     GamePage(
                         navController = navController,
-                        match_id = gameid
+                        gameId = gameid,
+                        new = new
                     )
                 }
                 composable(

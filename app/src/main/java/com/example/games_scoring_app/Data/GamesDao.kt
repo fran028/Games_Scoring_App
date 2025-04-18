@@ -20,6 +20,10 @@ interface GamesDao {
     @Query("SELECT * FROM games")
     fun getAllGames(): List<Games>
 
+    @Query("SELECT * FROM games ORDER BY date, id DESC LIMIT 1")
+    fun getLastGame(): Games?
 
+    @Query("SELECT * FROM games WHERE id = :id")
+    fun getGameById(id: Int): Games?
 
 }

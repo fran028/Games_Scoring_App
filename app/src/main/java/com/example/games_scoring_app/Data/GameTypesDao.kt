@@ -27,5 +27,11 @@ interface GameTypesDao {
     @Query("SELECT * FROM gameTypes WHERE name = :name")
     fun getGameTypeByName(name: String): GameTypes?
 
+    companion object {
+        fun insertGameType(item: GameTypes) {
+
+        }
+    }
+
 
 }

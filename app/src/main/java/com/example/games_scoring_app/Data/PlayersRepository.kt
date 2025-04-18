@@ -25,4 +25,8 @@ class PlayersRepository(private val playersDao: PlayersDao) {
         return playersDao.getPlayerByName(name)
     }
 
+    fun getPlayersByGameId(gameId: Int): List<Players> {
+        return playersDao.getPlayersByGameId(gameId)
+    }
+
 }

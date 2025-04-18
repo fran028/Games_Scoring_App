@@ -16,6 +16,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -85,12 +86,13 @@ fun PageTitle(title: String, image: Int, navController: NavController) {
                         modifier = Modifier.padding(horizontal = 8.dp)
                     )
                     Image(
-                        painter = painterResource(id = R.drawable.logobig),
+                        painter = painterResource(id = R.drawable.scoreboard),
                         contentDescription = "App Image",
-                        modifier = Modifier.size(50.dp)
+                        modifier = Modifier.size(60.dp)
                             .clickable {
                                 navController.navigate(Screen.SavedGames.route)
-                            }
+                            },
+
                     )
                 }
             }

@@ -25,7 +25,7 @@ interface ScoresDao {
     @Query("SELECT * FROM scores WHERE id = :id")
     fun getScoreById(id: Int): Scores?
 
-    @Query("SELECT * FROM scores WHERE id_player = :id_player")
-    fun getScoresByPlayerId(id_player: Int): List<Scores>
+    @Query("SELECT * FROM scores WHERE id_player = :id_player LIMIT 1")
+    suspend fun getScoresByPlayerId(id_player: Int): Scores
 
 }
