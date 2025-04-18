@@ -29,6 +29,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.games_scoring_app.Pages.GamePage
 import com.example.games_scoring_app.Pages.HomePage
+import com.example.games_scoring_app.Pages.RollDicePage
 import com.example.games_scoring_app.Pages.SavedGamesPage
 import com.example.games_scoring_app.Pages.SetupPage
 import com.example.games_scoring_app.ui.theme.Games_Scoring_AppTheme
@@ -121,6 +122,11 @@ fun MainScreen() {
                 }
                 composable(Screen.SavedGames.route) {
                     SavedGamesPage(
+                        navController = navController,
+                    )
+                }
+                composable(Screen.RollDice.route) {
+                    RollDicePage(
                         navController = navController,
                     )
                 }

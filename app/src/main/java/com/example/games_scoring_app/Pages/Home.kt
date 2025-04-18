@@ -142,16 +142,7 @@ fun HomePage(navController: NavController) {
         )
         Spacer(modifier = Modifier.height(20.dp))
         Column (Modifier.padding(horizontal = 30.dp )) {
-            if (gameTypes.isEmpty()) {
-                ButtonBar(
-                    text = "No Games Setup",
-                    bgcolor = yellow,
-                    height = 48.dp,
-                    textcolor = black,
-                    onClick = { },
-                )
-                Spacer(modifier = Modifier.height(20.dp))
-            } else {
+            if (gameTypes.isNotEmpty()) {
                 for (gameType in gameTypes) {
                     if (gameType != null) {
                         ButtonBar(
@@ -165,6 +156,14 @@ fun HomePage(navController: NavController) {
                     }
                 }
             }
+            ButtonBar(
+                text = "ROLL DICE",
+                bgcolor = yellow,
+                height = 48.dp,
+                textcolor = black,
+                onClick = { navController.navigate(Screen.RollDice.route) },
+            )
+            Spacer(modifier = Modifier.height(20.dp))
             /*ButtonBar(
                 text = "TRUCO",
                 bgcolor = yellow,

@@ -9,4 +9,5 @@ sealed class Screen(val route: String) {
         fun createRoute(game_type: Int?) = "Game/$game_type"
     }
     object SavedGames : Screen("SavedGames")
+    object RollDice : Screen("RollDice")
 }
