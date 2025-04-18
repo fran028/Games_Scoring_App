@@ -26,6 +26,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -54,6 +55,7 @@ import kotlinx.coroutines.SupervisorJob
 
 @Composable
 fun HomePage(navController: NavController) {
+    val appName = stringResource(id = R.string.app_name)
     var noGames = true
     val scrollState = rememberScrollState()
 
@@ -92,7 +94,7 @@ fun HomePage(navController: NavController) {
         horizontalAlignment = Alignment.Start,
         verticalArrangement = Arrangement.Top
     ) {
-        PageTitle("MENU", R.drawable.game_topview, navController);
+        PageTitle(appName, R.drawable.game_topview, navController);
 
         Spacer(modifier = Modifier.height(20.dp))
         Text(
