@@ -17,7 +17,7 @@ class GameTypesRepository(private val gameTypesDao: GameTypesDao) {
         return gameTypesDao.getAllGameTypes()
     }
 
-    fun getGameTypeById(id: Int): GameTypes? {
+    suspend fun getGameTypeById(id: Int): GameTypes? {
         return gameTypesDao.getGameTypeById(id)
     }
 

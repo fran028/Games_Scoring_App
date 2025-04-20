@@ -96,28 +96,31 @@ fun MainScreen() {
                 composable(
                     route = Screen.Game.route,
                     arguments = listOf(
-                        navArgument("game_id") { type = NavType.IntType }
+                        navArgument("gameId") { type = NavType.IntType }
                         ,navArgument("new") { type = NavType.BoolType }
+                        ,navArgument("gameTypeId") { type = NavType.IntType }
                     )
                 ) { backStackEntry ->
-                    val gameid = backStackEntry.arguments?.getInt("game_id") ?: 0
+                    val gameId = backStackEntry.arguments?.getInt("gameId") ?: 0
                     val new = backStackEntry.arguments?.getBoolean("new") ?: true
+                    val gameTypeId = backStackEntry.arguments?.getInt("gameTypeId") ?: 0
                     GamePage(
                         navController = navController,
-                        gameId = gameid,
-                        new = new
+                        gameId = gameId,
+                        new = new,
+                        gameTypeId = gameTypeId,
                     )
                 }
                 composable(
                     route = Screen.SetUp.route,
                     arguments = listOf(
-                        navArgument("game_type") { type = NavType.IntType }
+                        navArgument("gameType") { type = NavType.IntType }
                     )
                 ) { backStackEntry ->
-                    val gameType = backStackEntry.arguments?.getInt("game_type") ?: 0
+                    val gameType = backStackEntry.arguments?.getInt("gameType") ?: 0
                     SetupPage(
                         navController = navController,
-                        match_type = gameType
+                        gameType = gameType
                     )
                 }
                 composable(Screen.SavedGames.route) {

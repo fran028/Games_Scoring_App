@@ -41,6 +41,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.games_scoring_app.Components.ButtonBar
+import com.example.games_scoring_app.Components.LoadingMessage
 import com.example.games_scoring_app.Components.PageTitle
 import com.example.games_scoring_app.Components.PlayerAmountGrid
 import com.example.games_scoring_app.Data.AppDatabase
@@ -68,10 +69,10 @@ import kotlinx.coroutines.launch
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun SetupPage(navController: NavController, match_type: Int) {
+fun SetupPage(navController: NavController, gameType: Int) {
     val TAG  = "SetupPage"
     Log.d(TAG, "SetupPage called")
-    Log.d(TAG, "match_type: $match_type")
+    Log.d(TAG, "match_type: $gameType")
     val scrollState = rememberScrollState()
 
     val applicationScope = CoroutineScope(SupervisorJob())
@@ -96,15 +97,16 @@ fun SetupPage(navController: NavController, match_type: Int) {
     Log.d(TAG, "Viemodels setup finish")
 
     val gameTypes by gameTypesViewModel.allGameTypes.collectAsState()
-    val emptyGame = gamesViewModel.emptyGame()
-    val names = remember { mutableStateListOf<String>() }
     val lastGame by gamesViewModel.lastGame.collectAsState()
-    var gameId by remember { mutableStateOf(0) }
+    val emptyGame = gamesViewModel.emptyGame()
+
+    val names = remember { mutableStateListOf<String>() }
     val thisGameType = remember { mutableStateOf(gameTypesViewModel.emptyGameType()) }
     val maxPlayers by remember { derivedStateOf { thisGameType.value.maxPlayers } }
     val minPlayers by remember { derivedStateOf { thisGameType.value.minPlayers } }
     var selectedPlayerCount by remember { mutableStateOf(0) }
-    val defaultNames = listOf("A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M")
+    val defaultNames = listOf("P1", "P2", "P3", "P4", "P5", "P6", "P7", "P8", "P9", "P10")
+    val showSetup = remember { mutableStateOf(false) }
     Log.d(TAG, "Variables initialize")
 
     LaunchedEffect(key1 = Unit) {
@@ -116,31 +118,20 @@ fun SetupPage(navController: NavController, match_type: Int) {
         Log.d(TAG, "gameTypes LaunchedEffect called")
         if (gameTypes.isNotEmpty()) {
             Log.d(TAG, "gameTypes is not empty")
-            val newGameType = gameTypesViewModel.getGameTypeById(match_type)!!
+            val newGameType = gameTypesViewModel.getGameTypeById(gameType)!!
             thisGameType.value = newGameType // Update the State
             emptyGame.id_GameType = newGameType.id
             selectedPlayerCount = minPlayers
-            gamesViewModel.addNewGame(emptyGame)
-            gamesViewModel.getLastGame()
             names.clear()
             repeat(maxPlayers + 1) {
                 names.add("")
             }
+            kotlinx.coroutines.delay(1000)
+            showSetup.value = true
         } else {
             Log.d(TAG, "gameTypes is empty")
         }
     }
-
-    LaunchedEffect(key1 = lastGame) {
-        Log.d(TAG, "lastGame LaunchedEffect called")
-        if (lastGame != null) {
-            Log.d(TAG, "lastGame is not null")
-            gameId = lastGame!!.id
-        } else {
-            Log.d(TAG, "lastGame is null")
-        }
-    }
-
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -149,8 +140,9 @@ fun SetupPage(navController: NavController, match_type: Int) {
         horizontalAlignment = Alignment.Start,
         verticalArrangement = Arrangement.Top
     ) {
-        PageTitle("GAME SETUP", R.drawable.games_retro, navController)
-        if(lastGame != null && maxPlayers != 0) {
+        if(showSetup.value) {
+            PageTitle("GAME SETUP", R.drawable.games_retro, navController)
+
             Spacer(modifier = Modifier.height(20.dp))
             Text(
                 text = "PLAYERS AMOUNT",
@@ -245,25 +237,33 @@ fun SetupPage(navController: NavController, match_type: Int) {
                         textcolor = black,
                         onClick = {
                             Log.d(TAG, "START GAME button clicked")
-                            if (gameId != 0) {
 
-                                coroutineScope.launch {
-                                    for (i in 1..selectedPlayerCount) {
-                                        val name =
-                                            if (names[i].isNotBlank()) names[i] else defaultNames[i]
-                                        val player = Players(
-                                            name = name,
-                                            won = false,
-                                            id_game = gameId
-                                        )
-                                        Log.d(TAG, "Adding player: $player")
-                                        playersViewModel.addNewPlayer(player)
-                                    }
-                                    kotlinx.coroutines.delay(200) // short delay to avoid busy-waiting
+                            coroutineScope.launch {
 
-                                    Log.d(TAG, "Navigating to Game screen")
-                                    navController.navigate(Screen.Game.createRoute(gameId, true))
+                                gamesViewModel.addNewGame(emptyGame)
+                                kotlinx.coroutines.delay(500) // short delay to avoid busy-waiting
+                                gamesViewModel.getLastGame()
+                                kotlinx.coroutines.delay(500) // short delay to avoid busy-waiting
+                                val gameId = gamesViewModel.lastGame.value?.id ?: 0
+                                val currentGameType = gameType.toInt()
+                                for (i in 0..selectedPlayerCount-1) {
+                                    val name =
+                                        if (names[i].isNotBlank()) names[i] else defaultNames[i]
+                                    val player = Players(
+                                        name = name,
+                                        won = false,
+                                        id_game = gameId
+                                    )
+                                    Log.d(TAG, "Adding player: $player")
+                                    playersViewModel.addNewPlayer(player)
                                 }
+                                kotlinx.coroutines.delay(500) // short delay to avoid busy-waiting
+
+                                Log.d(TAG, "Navigating to Game screen")
+                                Log.d(TAG, "gameId: $gameId")
+                                Log.d(TAG, "new: true")
+                                Log.d(TAG, "game_type: $gameType")
+                                navController.navigate(Screen.Game.createRoute( gameId = gameId, new =true, gameTypeId = currentGameType))
                             }
                         }
                     )
@@ -271,18 +271,7 @@ fun SetupPage(navController: NavController, match_type: Int) {
                 Spacer(modifier = Modifier.height(40.dp))
             }
         } else {
-            Spacer(modifier = Modifier.height(20.dp))
-            Text(
-                text = "LOADING...",
-                fontFamily = LeagueGothic,
-                fontSize = 48.sp,
-                color = white,
-                modifier = Modifier
-                    .padding(horizontal = 32.dp)
-                    .fillMaxWidth()
-                    .align(Alignment.CenterHorizontally),
-                textAlign = TextAlign.Left
-            )
+            LoadingMessage("LOADING PAGE . . .")
         }
     }
 }

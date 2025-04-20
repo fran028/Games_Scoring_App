@@ -30,13 +30,17 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.games_scoring_app.Components.ButtonBar
+import com.example.games_scoring_app.Components.LoadingMessage
 import com.example.games_scoring_app.Components.PageTitle
 import com.example.games_scoring_app.Data.AppDatabase
+import com.example.games_scoring_app.Data.GameTypes
 import com.example.games_scoring_app.Data.GameTypesRepository
 import com.example.games_scoring_app.Data.GamesRepository
+import com.example.games_scoring_app.Data.Players
 import com.example.games_scoring_app.Data.PlayersRepository
 import com.example.games_scoring_app.Data.ScoresRepository
 import com.example.games_scoring_app.Games.GeneralaScoreboard
+import com.example.games_scoring_app.Games.PedroScoreboard
 import com.example.games_scoring_app.Games.TrucoScoreboard
 import com.example.games_scoring_app.R
 import com.example.games_scoring_app.Screen
@@ -58,7 +62,11 @@ import kotlinx.coroutines.launch
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun GamePage(navController: NavController, gameId: Int, new: Boolean) {
+fun GamePage(navController: NavController, gameId: Int, gameTypeId: Int, new: Boolean) {
+    if(gameTypeId == 0) {
+        Log.d("GamePage", "Navigating to Home screen")
+        navController.navigate(Screen.Home.route)
+    }
     val TAG = "GamePage"
     Log.d(TAG, "--- GAME STARTED ---")
     Log.d(TAG, "GamePage called with gameId: $gameId")
@@ -67,7 +75,6 @@ fun GamePage(navController: NavController, gameId: Int, new: Boolean) {
     val applicationScope = CoroutineScope(SupervisorJob())
     val context = LocalContext.current
     val database = AppDatabase.getDatabase(context, applicationScope)
-    Log.d(TAG, "database: $database")
     val coroutineScope = rememberCoroutineScope()
 
     val gamesRepository = GamesRepository(database.gamesDao())
@@ -82,62 +89,25 @@ fun GamePage(navController: NavController, gameId: Int, new: Boolean) {
     val playersViewModelFactory = PlayersViewModelFactory(playersRepository)
     val playersViewModel: PlayersViewModel = viewModel(factory = playersViewModelFactory)
 
-    val scoresRepository = ScoresRepository(database.scoresDao())
-    val scoresViewModelFactory = ScoresViewModelFactory(scoresRepository)
-    val scoresViewModel: ScoresViewModel = viewModel(factory = scoresViewModelFactory)
-
     Log.d(TAG, "Viemodels setup finish")
 
-    val game by gamesViewModel.currentGame.collectAsState()
+
     val lastGame by gamesViewModel.lastGame.collectAsState()
-    val gameTypes by gameTypesViewModel.allGameTypes.collectAsState()
-    val gameType = remember { mutableStateOf(gameTypesViewModel.emptyGameType()) }
-    val players by playersViewModel.currentGamePlayers.collectAsState()
-    val scores by scoresViewModel.allPlayersScores.collectAsState()
+    val gameType= remember { mutableStateOf<GameTypes?>(null) }
+    val players = remember { mutableStateOf<List<Players>?>(null) }
+    val showScoreboard = remember { mutableStateOf(false) }
     Log.d(TAG, "Variables initialize")
 
     LaunchedEffect(key1 = Unit) {
         Log.d(TAG, "First LaunchedEffect called")
-        gamesViewModel.getGameById(gameId)
-        gameTypesViewModel.getAllGameTypes()
+        players.value = playersViewModel.getPlayerByGameId(gameId)
+        gameType.value = gameTypesViewModel.getGameTypeById(gameTypeId)
+        showScoreboard.value = true
         Log.d(TAG, "First LaunchedEffect finish")
     }
 
-    LaunchedEffect(key1 = game, key2 = gameTypes, key3 = game?.id_GameType) {
-        Log.d(TAG, "Second LaunchedEffect called")
-        if (game != null) {
-            Log.d(TAG, "game is not null")
-            val newGameType = gameTypesViewModel.getGameTypeById(game!!.id_GameType)!!
-            gameType.value = newGameType
-            playersViewModel.getPlayersByGameId(gameId)
-        } else {
-            Log.d(TAG, "game is null")
-        }
-        Log.d(TAG, "Second LaunchedEffect finish")
-    }
+    val titelImage = remember { mutableStateOf(R.drawable.dice_far) }
 
-    LaunchedEffect(key1 = players, new) {
-        Log.d(TAG, "Third LaunchedEffect called")
-        if (players.isNotEmpty()) {
-            if (!new) {
-                Log.d(TAG, "Not new")
-                scoresViewModel.getAllPlayersScores(players)
-                Log.d(TAG, "scores: $scores")
-            } else {
-                Log.d(TAG, "New")
-                scoresViewModel.addEmtpyScoreToAllPlayers(players)
-                scoresViewModel.getAllPlayersScores(players)
-                Log.d(TAG, "scores: $scores")
-            }
-        } else {
-            Log.d(TAG, "players is empty")
-        }
-        Log.d(TAG, "Third LaunchedEffect finish")
-    }
-    var titelImage = R.drawable.fondo_cartas_truco
-    if(gameType.value.name == "Generala"){
-        titelImage = R.drawable.dice_far
-    }
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -146,65 +116,58 @@ fun GamePage(navController: NavController, gameId: Int, new: Boolean) {
         horizontalAlignment = Alignment.Start,
         verticalArrangement = Arrangement.Top
     ) {
-        PageTitle(gameType.value.name.uppercase(), titelImage, navController)
-        Spacer(modifier = Modifier.height(20.dp))
-        Column(modifier = Modifier.padding(horizontal = 20.dp)) {
-            ButtonBar(
-                text = "NEW GAME",
-                bgcolor = yellow,
-                height = 48.dp,
-                textcolor = black,
-                onClick = {
-                    Log.d(TAG, "NEW GAME button clicked")
-                    coroutineScope.launch {
-                        val emptyGame = gamesViewModel.emptyGame()
-                        emptyGame.id_GameType = gameType.value.id
-                        gamesViewModel.addNewGame(emptyGame)
-                        gamesViewModel.getLastGame()
-                        // Wait until lastGame is not null, indicating the game is created.
-                        while (lastGame == null) {
-                            kotlinx.coroutines.delay(100) // short delay to avoid busy-waiting
-                        }
-                        Log.d(TAG, "lastGame: $lastGame")
-                        for (player in players) {
-                            player!!.id_game = lastGame!!.id
-                            playersViewModel.addNewPlayer(player)
-                            Log.d(TAG, "player: $player")
-                        }
-                        Log.d(TAG, "Navigating to Game screen")
-                        navController.navigate(Screen.Game.createRoute(lastGame!!.id, true))
+        if (showScoreboard.value) {
+            if(gameType.value!!.name == "Generala"){
+                titelImage.value = R.drawable.dice_far
+            }
+            PageTitle(gameType.value!!.name.uppercase(), titelImage.value, navController)
+            Spacer(modifier = Modifier.height(20.dp))
 
+            Column(modifier = Modifier.padding(horizontal = 20.dp)) {
+                ButtonBar(
+                    text = "NEW GAME",
+                    bgcolor = yellow,
+                    height = 48.dp,
+                    textcolor = black,
+                    onClick = {
+                        Log.d(TAG, "NEW GAME button clicked")
+                        coroutineScope.launch {
+                            val emptyGame = gamesViewModel.emptyGame()
+                            emptyGame.id_GameType = gameType.value!!.id
+                            gamesViewModel.addNewGame(emptyGame)
+                            gamesViewModel.getLastGame()
+                            // Wait until lastGame is not null, indicating the game is created.
+                            while (lastGame == null) {
+                                kotlinx.coroutines.delay(100) // short delay to avoid busy-waiting
+                            }
+                            Log.d(TAG, "lastGame: $lastGame")
+                            for (player in players.value!!) {
+                                player.id_game = lastGame!!.id
+                                playersViewModel.addNewPlayer(player)
+                                Log.d(TAG, "player: $player")
+                            }
+                            Log.d(TAG, "Navigating to Game screen")
+                            navController.navigate(Screen.Game.createRoute(lastGame!!.id,true, gameTypeId))
+
+                        }
                     }
-                }
-            )
-            if (scores.isNotEmpty() && players.isNotEmpty() ) {
-                if(gameType.value.name.isNotEmpty() || gameType.value.name.isNotBlank()) {
-                    Log.d(TAG, "gameType: ${gameType.value.name}")
-                    Log.d(TAG, "scores: $scores")
+                )
+                if (gameType.value!!.name.isNotBlank()) {
+                    Log.d(TAG, "gameType: ${gameType.value!!.name}")
                     Spacer(modifier = Modifier.height(20.dp))
-                    if (gameType.value.name == "Generala") {
-                        GeneralaScoreboard(players, scores, gameType.value.maxScore)
-                    } else if (gameType.value.name == "Truco") {
-                        TrucoScoreboard(players, scores, gameType.value.maxScore)
+                    if (gameType.value!!.name == "Generala") {
+                        GeneralaScoreboard(players.value!!)
+                    } else if (gameType.value!!.name == "Truco") {
+                        TrucoScoreboard(players.value!!, gameType.value!!.maxScore)
+                    } else if (gameType.value!!.name == "Pedro") {
+                        PedroScoreboard(players.value!!, gameType.value!!.maxScore)
                     }
                 } else {
-                   Log.d(TAG, "gameType is empty")
+                    Log.d(TAG, "gameType is empty")
                 }
-
-            } else {
-                Spacer(modifier = Modifier.height(100.dp))
-                Text(
-                    text = "LOADING ...",
-                    fontFamily = LeagueGothic,
-                    fontSize = 60.sp,
-                    color = white,
-                    modifier = Modifier
-                        .padding(horizontal = 32.dp)
-                        .fillMaxWidth()
-                        .align(Alignment.CenterHorizontally),
-                    textAlign = TextAlign.Center
-                )
             }
+        }  else {
+            LoadingMessage("LOADING PAGE . . .")
         }
     }
 

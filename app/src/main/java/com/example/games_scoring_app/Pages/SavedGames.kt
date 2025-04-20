@@ -99,7 +99,7 @@ fun SavedGamesPage(navController: NavController) {
                     if (game != null) {
                         ButtonDateBar(
                             text = gameTypes[game.id_GameType-1]?.name?.uppercase() ?: "",
-                            onClick = { navController.navigate(Screen.Game.createRoute(game.id, false)) },
+                            onClick = { navController.navigate(Screen.Game.createRoute(game.id, false, game.id_GameType)) },
                             bgcolor = blue,
                             height = 50.dp,
                             textcolor = black,

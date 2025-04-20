@@ -94,7 +94,7 @@ fun HomePage(navController: NavController) {
         horizontalAlignment = Alignment.Start,
         verticalArrangement = Arrangement.Top
     ) {
-        PageTitle(appName, R.drawable.game_topview, navController);
+        PageTitle(appName.uppercase(), R.drawable.game_topview, navController);
 
         Spacer(modifier = Modifier.height(20.dp))
         Text(
@@ -113,7 +113,7 @@ fun HomePage(navController: NavController) {
             if (lastGame!= null){
                 ButtonDateBar(
                     text = lastGameType.uppercase(),
-                    onClick = { navController.navigate(Screen.Game.createRoute(lastGame?.id)) },
+                    onClick = { navController.navigate(Screen.Game.createRoute(lastGame!!.id,true, lastGame!!.id_GameType)) },
                     bgcolor = blue,
                     height = 50.dp,
                     textcolor = black,

@@ -75,6 +75,15 @@ abstract class AppDatabase : RoomDatabase() {
             gameTypesDao.insertGameType(item2)
             Log.d("AppDatabase", "Generala added to database")
 
+            val item3 = GameTypes(
+                name = "Pedro",
+                maxPlayers = 8,
+                minPlayers = 2,
+                maxScore = 100
+            )
+            gameTypesDao.insertGameType(item3)
+            Log.d("AppDatabase", "Pedro added to database")
+
         }
     }
 }

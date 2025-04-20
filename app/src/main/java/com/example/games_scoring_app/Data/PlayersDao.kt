@@ -28,6 +28,6 @@ interface PlayersDao {
     fun getPlayerByName(name: String): Players?
 
     @Query("SELECT * FROM players WHERE id_Game = :gameId")
-    fun getPlayersByGameId(gameId: Int): List<Players>
+    suspend fun getPlayersByGameId(gameId: Int): List<Players>
 
 }

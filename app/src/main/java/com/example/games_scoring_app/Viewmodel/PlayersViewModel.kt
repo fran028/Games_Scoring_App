@@ -17,7 +17,7 @@ class PlayersViewModel(private val playersRepository: PlayersRepository) : ViewM
         }
     }
 
-    private val _currentGamePlayers = MutableStateFlow<List<Players?>>(listOf())
+    /*private val _currentGamePlayers = MutableStateFlow<List<Players?>>(listOf())
     val currentGamePlayers: StateFlow<List<Players?>> = _currentGamePlayers
     fun getPlayersByGameId(gameId: Int){
         viewModelScope.launch(Dispatchers.IO) {
@@ -26,5 +26,10 @@ class PlayersViewModel(private val playersRepository: PlayersRepository) : ViewM
                 _currentGamePlayers.value = playersList
             }
         }
+    }*/
+
+
+    suspend fun getPlayerByGameId(id: Int): List<Players> {
+        return playersRepository.getPlayersByGameId(id)
     }
 }

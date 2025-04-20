@@ -22,7 +22,7 @@ interface GameTypesDao {
     fun getAllGameTypes(): List<GameTypes>
 
     @Query("SELECT * FROM gameTypes WHERE id = :id")
-    fun getGameTypeById(id: Int): GameTypes?
+    suspend fun getGameTypeById(id: Int): GameTypes?
 
     @Query("SELECT * FROM gameTypes WHERE name = :name")
     fun getGameTypeByName(name: String): GameTypes?

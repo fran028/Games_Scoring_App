@@ -62,7 +62,7 @@ fun calculateTotals(playerListStates: List<SnapshotStateList<Int>>, valoresGener
     }
 }
 @Composable
-fun GeneralaScoreboard(players: List<Players?>, scores: List<Scores>, maxScore: Int) {
+fun GeneralaScoreboard(players: List<Players?>) {
     val TAG = "Generala"
 
     val opcionesGenerala = listOf("1", "2", "3", "4", "5", "6", "Escalera", "Full", "Poker", "Generala", "Generala x2")

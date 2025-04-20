@@ -28,8 +28,8 @@ class GameTypesViewModel(private val gameTypesRepository: GameTypesRepository) :
         }
     }
 
-    fun getGameTypeById(id: Int): GameTypes? {
-        return allGameTypes.value.find { it?.id == id }
+    suspend fun getGameTypeById(id: Int): GameTypes? {
+        return gameTypesRepository.getGameTypeById(id)
     }
 
     fun emptyGameType(): GameTypes {

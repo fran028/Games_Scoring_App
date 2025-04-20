@@ -2,11 +2,11 @@ package com.example.games_scoring_app
 
 sealed class Screen(val route: String) {
     object Home : Screen("Home")
-    object Game : Screen("Game/{game_id}/{new}"){
-        fun createRoute(game_id: Int?, new: Boolean = true) = "Game/$game_id/$new"
+    object Game : Screen("Game/{gameId}/{new}/{gameTypeId}"){
+        fun createRoute(gameId: Int, new: Boolean , gameTypeId: Int) = "Game/$gameId/$new/$gameTypeId"
     }
-    object SetUp : Screen("Game/{game_type}"){
-        fun createRoute(game_type: Int?) = "Game/$game_type"
+    object SetUp : Screen("Game/{gameType}"){
+        fun createRoute(gameType: Int?) = "Game/$gameType"
     }
     object SavedGames : Screen("SavedGames")
     object RollDice : Screen("RollDice")

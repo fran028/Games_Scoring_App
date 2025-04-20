@@ -16,7 +16,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -26,6 +25,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.games_scoring_app.Data.Players
@@ -35,83 +35,109 @@ import com.example.games_scoring_app.Theme.black
 import com.example.games_scoring_app.Theme.blue
 import com.example.games_scoring_app.Theme.green
 import com.example.games_scoring_app.Theme.white
+import com.example.games_scoring_app.Theme.yellow
 
 @Composable
-fun TrucoScoreboard(players: List<Players?>, scores: List<Scores>, maxScore: Int) {
+fun TrucoScoreboard(players: List<Players?>, maxScore: Int) {
     val TAG = "Truco"
 
     val player1 = players[0]
     val player2 = players[1]
-
-    // Initialize scores as mutable state
-    var score1 by remember { mutableStateOf(scores[0].score) }
-    var score2 by remember { mutableStateOf(scores[1].score) }
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(black)
-            .padding(0.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Top
-    ) {
-        Row(
+    if( player1 == null || player2 == null){
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(vertical = 0.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.Top
+                .fillMaxSize()
+                .background(black)
+                .padding(0.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
         ) {
-            PlayerColum(
-                player1!!.name,
-                score1,
-                maxScore,
-                onScoreClick = { scoreValue ->
-                    Log.d(TAG, "scoreValue: ${scoreValue}")
-                    Log.d(TAG, "oldScore: ${score1}")
-                    if(score1 <= scoreValue) {
-                        score1 = score1 + 1
-                    } else if (score1 > 0) {
-                        score1 = score1 - 1
-                    }
-                    Log.d(TAG, "newScore: ${score1}")
-                }
-            )
-            Column(modifier = Modifier
-                .fillMaxHeight()
-                .width(40.dp),
-                verticalArrangement = Arrangement.Top,
-                horizontalAlignment = Alignment.CenterHorizontally) {
-                Box(
-                    modifier = Modifier
-                        .width(10.dp)
-                        .height(620.dp)
-                        .background(white)
-                        .border(2.dp, white, shape = RoundedCornerShape(5.dp))
-                )
-            }
-            PlayerColum(
-                player2!!.name,
-                score2,
-                maxScore,
-                onScoreClick = { scoreValue ->
-                    Log.d(TAG, "scoreValue: ${scoreValue}")
-                    Log.d(TAG, "oldScore: ${score2}")
-                    if(score2 <= scoreValue) {
-                        score2 = score2 + 1
-                    } else if (score2 > 0) {
-                        score2 = score2 - 1
-                    }
-                    Log.d(TAG, "newScore: ${score2}")
-                }
+            Text(
+                text = "DATA ERROR",
+                fontFamily = LeagueGothic,
+                fontSize = 48.sp,
+                color = white,
+                modifier = Modifier
             )
         }
+    } else {
+        // Initialize scores as mutable state
+        var score1 by remember { mutableStateOf(0) }
+        var score2 by remember { mutableStateOf(0) }
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(black)
+                .padding(0.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Top
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 0.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.Top
+            ) {
+                PlayerTrucoColumn(
+                    player1!!.name,
+                    score1,
+                    maxScore,
+                    onScoreClick = { scoreValue ->
+                        Log.d(TAG, "scoreValue: ${scoreValue}")
+                        Log.d(TAG, "oldScore: ${score1}")
+                        if (score1 <= scoreValue) {
+                            score1 = score1 + 1
+                        } else if (score1 > 0) {
+                            score1 = score1 - 1
+                        }
+                        Log.d(TAG, "newScore: ${score1}")
+                    }
+                )
+                Column(
+                    modifier = Modifier
+                        .fillMaxHeight()
+                        .width(40.dp),
+                    verticalArrangement = Arrangement.Top,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .width(10.dp)
+                            .height(620.dp)
+                            .background(white)
+                            .border(2.dp, white, shape = RoundedCornerShape(5.dp))
+                    )
+                }
+                PlayerTrucoColumn(
+                    player2!!.name,
+                    score2,
+                    maxScore,
+                    onScoreClick = { scoreValue ->
+                        Log.d(TAG, "scoreValue: ${scoreValue}")
+                        Log.d(TAG, "oldScore: ${score2}")
+                        if (score2 <= scoreValue) {
+                            score2 = score2 + 1
+                        } else if (score2 > 0) {
+                            score2 = score2 - 1
+                        }
+                        Log.d(TAG, "newScore: ${score2}")
+                    }
+                )
+            }
 
+        }
     }
-
 }
 
 @Composable
-fun PlayerColum(playerName: String, score: Int, maxScore: Int, onScoreClick: (Int) -> Unit){
+private fun PlayerTrucoColumn(
+    playerName: String,
+    score: Int,
+    maxScore: Int,
+    onScoreClick: (Int) -> Unit,
+){
     val TAG = "Truco"
     Column(
         modifier = Modifier
@@ -126,7 +152,7 @@ fun PlayerColum(playerName: String, score: Int, maxScore: Int, onScoreClick: (In
             text = playerName,
             fontFamily = LeagueGothic,
             fontSize = 48.sp,
-            color = white,
+            color = if(score >= maxScore) yellow else white,
             modifier = Modifier
                 .fillMaxWidth()
                 .align(Alignment.CenterHorizontally),
