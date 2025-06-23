@@ -34,8 +34,10 @@ import com.example.games_scoring_app.Theme.black
 import com.example.games_scoring_app.Theme.blue
 import com.example.games_scoring_app.Theme.white
 import androidx.compose.runtime.snapshots.SnapshotStateList
+import com.example.games_scoring_app.Theme.gray
 import com.example.games_scoring_app.Theme.green
 import com.example.games_scoring_app.Theme.red
+import com.example.games_scoring_app.Theme.yellow
 import java.util.Collections
 
 @Composable
@@ -62,7 +64,7 @@ fun calculateTotals(playerListStates: List<SnapshotStateList<Int>>, valoresGener
     }
 }
 @Composable
-fun GeneralaScoreboard(players: List<Players?>) {
+fun GeneralaScoreboard(players: Array<String>) {
     val TAG = "Generala"
 
     val opcionesGenerala = listOf("1", "2", "3", "4", "5", "6", "Escalera", "Full", "Poker", "Generala", "Generala x2")
@@ -206,7 +208,7 @@ fun GeneralaScoreboard(players: List<Players?>) {
                         val maxwidth = (272 / players.size - 4.5 * players.size).dp
                         val width = if (maxwidth < minwidth) minwidth else maxwidth
 
-                        val playerName = if(players.size > 2) players[i]!!.name.substring(0,2) else players[i]!!.name
+                        val playerName = if(players.size > 2) players[i].substring(0,2) else players[i]
                         Column(
                             modifier = Modifier
                                 .fillMaxHeight()
@@ -233,11 +235,21 @@ fun GeneralaScoreboard(players: List<Players?>) {
                             Spacer(modifier = Modifier.height(6.dp))
                             for (j in valoresGenerala.indices) {
                                 val currentOptionIndex = playerListStates[i][j]
+                                val currentValue = valoresGenerala[j].getOrElse(currentOptionIndex) { "-" }
+                                val boxBackgroundColor = when {
+                                    currentValue == "x" -> black // Your desired black color
+                                    currentValue == "-" -> gray // Your desired gray color
+                                    j >= 6 && currentOptionIndex == 2 -> yellow // Define 'yellow' in your Theme or use Color.Yellow
+                                    else -> white // Your default white color
+                                }
+
+                                // Determine text color for readability, especially if background is black
+                                val textColor = if (currentValue == "x") white else black
                                  Box(
                                     modifier = Modifier
                                         .width(width)
                                         .height(45.dp)
-                                        .background(white, shape = RoundedCornerShape(7.5.dp))
+                                        .background(boxBackgroundColor, shape = RoundedCornerShape(7.5.dp))
                                         .padding(0.dp)
                                         .clickable { cycleToNextOption(i, j) },
                                     contentAlignment = Alignment.Center
@@ -246,7 +258,7 @@ fun GeneralaScoreboard(players: List<Players?>) {
                                         text = valoresGenerala[j].getOrElse(currentOptionIndex, { "-" }),
                                         fontFamily = LeagueGothic,
                                         fontSize = 24.sp,
-                                        color = black,
+                                        color = textColor,
                                         textAlign = TextAlign.Right,
                                     )
                                 }

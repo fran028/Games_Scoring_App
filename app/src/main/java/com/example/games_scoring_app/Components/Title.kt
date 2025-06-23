@@ -85,7 +85,7 @@ fun PageTitle(title: String, image: Int, navController: NavController) {
                         ),
                         modifier = Modifier.padding(horizontal = 8.dp)
                     )
-                    Image(
+                    /*Image(
                         painter = painterResource(id = R.drawable.scoreboard),
                         contentDescription = "App Image",
                         modifier = Modifier.size(60.dp)
@@ -93,6 +93,14 @@ fun PageTitle(title: String, image: Int, navController: NavController) {
                                 navController.navigate(Screen.SavedGames.route)
                             },
 
+                    )*/
+                    Image(
+                        painter = painterResource(id = R.drawable.logobig),
+                        contentDescription = "App Image",
+                        modifier = Modifier.size(50.dp)
+                            .clickable {
+                                navController.navigate(Screen.Home.route)
+                            }
                     )
                 }
             }

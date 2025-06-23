@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -27,7 +28,7 @@ import com.example.games_scoring_app.Theme.LeagueGothic
 import com.example.games_scoring_app.Theme.white
 
 @Composable
-fun LoadingMessage(text: String = "LOADING . . .") {
+fun LoadingMessage(text: String = "LOADING") {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
@@ -49,5 +50,6 @@ fun LoadingMessage(text: String = "LOADING . . .") {
             ),
             textAlign = TextAlign.Center
         )
+        CircularProgressIndicator(color = white)
     }
 }

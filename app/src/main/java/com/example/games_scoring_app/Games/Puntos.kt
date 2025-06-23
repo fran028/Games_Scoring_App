@@ -40,9 +40,9 @@ import com.example.games_scoring_app.Theme.white
 import kotlin.text.toIntOrNull
 
 @Composable
-fun PedroScoreboard(players: List<Players?>, maxScore: Int) {
-    val TAG = "Pedro"
-    Log.d(TAG, "PedroScoreboard called")
+fun PuntosScoreboard(players: Array<String>, maxScore: Int) {
+    val TAG = "PuntosScoreboard"
+    Log.d(TAG, "PuntosScoreboard called")
     var emptyPlayers = false
 
     for (player in players) {
@@ -98,7 +98,7 @@ fun PedroScoreboard(players: List<Players?>, maxScore: Int) {
                 },
                 inputValue = inputValue,
                 onInputValueChange = { inputValue = it },
-                playername = players[selectedPlayerIndex]!!.name
+                playername = players[selectedPlayerIndex]
             )
         }
         Column(
@@ -118,8 +118,8 @@ fun PedroScoreboard(players: List<Players?>, maxScore: Int) {
                     verticalAlignment = Alignment.Top
                 ) {
                     for (i in players.indices) {
-                        val playerName = if (players.size > 2) players[i]!!.name.substring( 0, 2 ) else players[i]!!.name
-                        PlayerPedroColumn(
+                        val playerName = if (players.size > 2) players[i].substring( 0, 2 ) else players[i]
+                        PlayerPuntosColumn(
                             playerName,
                             playerScores[i],
                             maxScore,
@@ -138,7 +138,7 @@ fun PedroScoreboard(players: List<Players?>, maxScore: Int) {
 }
 
 @Composable
-fun PlayerPedroColumn(
+fun PlayerPuntosColumn(
     playerName: String,
     scores: MutableState<List<Int>>, // Changed type
     maxScore: Int,
@@ -159,7 +159,7 @@ fun PlayerPedroColumn(
                 .width(width)
                 .height(45.dp)
                 .background(
-                    if (TotalScore(scoresList) >= maxScore) red else white, // Use scoresList here
+                    /*if (TotalScore(scoresList) >= maxScore) red else*/ white, // Use scoresList here
                     shape = RoundedCornerShape(7.5.dp)
                 )
                 .padding(2.5.dp),
@@ -174,7 +174,7 @@ fun PlayerPedroColumn(
             )
         }
         Spacer(modifier = Modifier.height(6.dp))
-        for (score in scoresList) { // Use scoresList here
+        for (score in scoresList) {
             Text(
                 text = score.toString(),
                 fontFamily = LeagueGothic,
@@ -186,10 +186,10 @@ fun PlayerPedroColumn(
             Spacer(modifier = Modifier.height(6.dp))
         }
         Text(
-            text = TotalScore(scoresList).toString(), // Use scoresList here
+            text = TotalScore(scoresList).toString(),
             fontFamily = LeagueGothic,
             fontSize = 36.sp,
-            color = if (TotalScore(scoresList) >= maxScore) red else green,
+            color = /*if (TotalScore(scoresList) >= maxScore) red else */green,
             textAlign = TextAlign.Right,
         )
         Box(

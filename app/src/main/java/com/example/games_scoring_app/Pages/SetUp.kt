@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -32,9 +33,11 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.isEmpty
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -66,6 +69,7 @@ import com.example.games_scoring_app.Viewmodel.PlayersViewModelFactory
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
+import kotlin.collections.sliceArray
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
@@ -82,23 +86,23 @@ fun SetupPage(navController: NavController, gameType: Int) {
 
     val coroutineScope = rememberCoroutineScope()
 
-    val gamesRepository = GamesRepository(database.gamesDao())
+    /*val gamesRepository = GamesRepository(database.gamesDao())
     val gamesViewModelFactory = GamesViewModelFactory(gamesRepository)
-    val gamesViewModel: GamesViewModel = viewModel(factory = gamesViewModelFactory)
+    val gamesViewModel: GamesViewModel = viewModel(factory = gamesViewModelFactory)*/
 
     val gameTypesRepository = GameTypesRepository(database.gameTypesDao())
     val gameTypesViewModelFactory = GameTypesViewModelFactory(gameTypesRepository)
     val gameTypesViewModel: GameTypesViewModel = viewModel(factory = gameTypesViewModelFactory)
 
-    val playersRepository = PlayersRepository(database.playersDao())
+    /*val playersRepository = PlayersRepository(database.playersDao())
     val playersViewModelFactory = PlayersViewModelFactory(playersRepository)
-    val playersViewModel: PlayersViewModel = viewModel(factory = playersViewModelFactory)
+    val playersViewModel: PlayersViewModel = viewModel(factory = playersViewModelFactory)*/
 
     Log.d(TAG, "Viemodels setup finish")
 
     val gameTypes by gameTypesViewModel.allGameTypes.collectAsState()
-    val lastGame by gamesViewModel.lastGame.collectAsState()
-    val emptyGame = gamesViewModel.emptyGame()
+    //val lastGame by gamesViewModel.lastGame.collectAsState()
+    //val emptyGame = gamesViewModel.emptyGame()
 
     val names = remember { mutableStateListOf<String>() }
     val thisGameType = remember { mutableStateOf(gameTypesViewModel.emptyGameType()) }
@@ -120,10 +124,11 @@ fun SetupPage(navController: NavController, gameType: Int) {
             Log.d(TAG, "gameTypes is not empty")
             val newGameType = gameTypesViewModel.getGameTypeById(gameType)!!
             thisGameType.value = newGameType // Update the State
-            emptyGame.id_GameType = newGameType.id
+            //emptyGame.id_GameType = newGameType.id
             selectedPlayerCount = minPlayers
+            Log.d(TAG, "selectedPlayerCount: $selectedPlayerCount")
             names.clear()
-            repeat(maxPlayers + 1) {
+            repeat(maxPlayers) {
                 names.add("")
             }
             kotlinx.coroutines.delay(1000)
@@ -132,6 +137,9 @@ fun SetupPage(navController: NavController, gameType: Int) {
             Log.d(TAG, "gameTypes is empty")
         }
     }
+
+    val allowedChars = remember { ('a'..'z') + ('A'..'Z') + ('0'..'9') } // Define allowed characters
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -163,7 +171,9 @@ fun SetupPage(navController: NavController, gameType: Int) {
                     onPlayerAmountSelected = { amount ->
                         selectedPlayerCount = amount
                     },
-                    modifier = Modifier.fillMaxWidth().padding(0.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(0.dp),
                     selectedbgcolor = blue,
                     bgcolor = white
                 )
@@ -180,8 +190,8 @@ fun SetupPage(navController: NavController, gameType: Int) {
                         .padding(horizontal = 12.dp),
                     textAlign = TextAlign.Left
                 )
-                for (i in 1..maxPlayers) {
-                    val isSelected = i <= selectedPlayerCount
+                for (i in 0..maxPlayers-1) {
+                    val isSelected = i < selectedPlayerCount
                     var inputcolor = white
                     if (isSelected) {
                         inputcolor = blue
@@ -189,7 +199,9 @@ fun SetupPage(navController: NavController, gameType: Int) {
 
                     TextField(
                         value = names[i],
-                        onValueChange = { names[i] = it },
+                        onValueChange = {
+                            names[i] = it
+                        },
                         enabled = isSelected,
                         placeholder = {
                             Text(
@@ -223,13 +235,16 @@ fun SetupPage(navController: NavController, gameType: Int) {
                             disabledLabelColor = Color.Transparent,
                             disabledPlaceholderColor = Color.Transparent,
                             cursorColor = Color.Transparent,
-                        )
+                        ),
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text)
 
                     )
                     Spacer(modifier = Modifier.height(6.dp))
                 }
                 Spacer(modifier = Modifier.height(20.dp))
-                Row (modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp), horizontalArrangement = Arrangement.Center) {
+                Row (modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 12.dp), horizontalArrangement = Arrangement.Center) {
                     ButtonBar(
                         text = "START GAME",
                         bgcolor = green,
@@ -240,30 +255,23 @@ fun SetupPage(navController: NavController, gameType: Int) {
 
                             coroutineScope.launch {
 
-                                gamesViewModel.addNewGame(emptyGame)
-                                kotlinx.coroutines.delay(500) // short delay to avoid busy-waiting
-                                gamesViewModel.getLastGame()
-                                kotlinx.coroutines.delay(500) // short delay to avoid busy-waiting
-                                val gameId = gamesViewModel.lastGame.value?.id ?: 0
-                                val currentGameType = gameType.toInt()
-                                for (i in 0..selectedPlayerCount-1) {
-                                    val name =
-                                        if (names[i].isNotBlank()) names[i] else defaultNames[i]
-                                    val player = Players(
-                                        name = name,
-                                        won = false,
-                                        id_game = gameId
-                                    )
-                                    Log.d(TAG, "Adding player: $player")
-                                    playersViewModel.addNewPlayer(player)
-                                }
-                                kotlinx.coroutines.delay(500) // short delay to avoid busy-waiting
+                                //gamesViewModel.addNewGame(emptyGame)
+                                //kotlinx.coroutines.delay(500) // short delay to avoid busy-waiting
+                                //gamesViewModel.getLastGame()
+                                //kotlinx.coroutines.delay(500) // short delay to avoid busy-waiting
+                                //val gameId = gamesViewModel.lastGame.value?.id ?: 0
+                                //kotlinx.coroutines.delay(500)
 
+                                // check player names up to selectedPlayerCount and replace with default if empty
+                                for (i in 0 until selectedPlayerCount) {
+                                    if (names[i].isEmpty()) {
+                                        names[i] = defaultNames[i]
+                                    }
+                                }
+                                val playerNamesToPass = names.take(selectedPlayerCount).toTypedArray()
                                 Log.d(TAG, "Navigating to Game screen")
-                                Log.d(TAG, "gameId: $gameId")
-                                Log.d(TAG, "new: true")
                                 Log.d(TAG, "game_type: $gameType")
-                                navController.navigate(Screen.Game.createRoute( gameId = gameId, new =true, gameTypeId = currentGameType))
+                                navController.navigate(Screen.Game.createRoute( gameTypeId = gameType, playerNames = playerNamesToPass))
                             }
                         }
                     )
@@ -271,7 +279,7 @@ fun SetupPage(navController: NavController, gameType: Int) {
                 Spacer(modifier = Modifier.height(40.dp))
             }
         } else {
-            LoadingMessage("LOADING PAGE . . .")
+            LoadingMessage("LOADING")
         }
     }
 }

@@ -63,29 +63,26 @@ fun HomePage(navController: NavController) {
     val context = LocalContext.current
     val database = AppDatabase.getDatabase(context, applicationScope)
 
-    val gamesRepository = GamesRepository(database.gamesDao())
+    /*val gamesRepository = GamesRepository(database.gamesDao())
     val gamesViewModelFactory = GamesViewModelFactory(gamesRepository)
-    val gamesViewModel: GamesViewModel = viewModel(factory = gamesViewModelFactory)
+    val gamesViewModel: GamesViewModel = viewModel(factory = gamesViewModelFactory)*/
 
     val gameTypesRepository = GameTypesRepository(database.gameTypesDao())
     val gameTypesViewModelFactory = GameTypesViewModelFactory(gameTypesRepository)
     val gameTypesViewModel: GameTypesViewModel = viewModel(factory = gameTypesViewModelFactory)
 
-    val lastGame by gamesViewModel.lastGame.collectAsState()
+    //val lastGame by gamesViewModel.lastGame.collectAsState()
     val gameTypes by gameTypesViewModel.allGameTypes.collectAsState()
 
     var lastGameType by remember { mutableStateOf("") }
     LaunchedEffect(key1 = Unit) {
-        gamesViewModel.getLastGame()
+        //gamesViewModel.getLastGame()
         gameTypesViewModel.getAllGameTypes()
     }
 
-    LaunchedEffect(key1 = lastGame) {
-        if (lastGame != null) {
-            noGames = false
-            lastGameType = gameTypesViewModel.getGameTypeNameById(lastGame!!.id_GameType) ?: ""
-        }
-    }
+
+
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -96,7 +93,7 @@ fun HomePage(navController: NavController) {
     ) {
         PageTitle(appName.uppercase(), R.drawable.game_topview, navController);
 
-        Spacer(modifier = Modifier.height(20.dp))
+        /*Spacer(modifier = Modifier.height(20.dp))
         Text(
             text = "LAST GAME PLAYED",
             fontFamily = LeagueGothic,
@@ -129,7 +126,7 @@ fun HomePage(navController: NavController) {
                     onClick = {  }
                 )
             }
-        }
+        }*/
         Spacer(modifier = Modifier.height(20.dp))
         Text(
             text = "GAMES",
@@ -157,30 +154,27 @@ fun HomePage(navController: NavController) {
                         Spacer(modifier = Modifier.height(20.dp))
                     }
                 }
+                ButtonBar(
+                    text = "ROLL DICE",
+                    bgcolor = yellow,
+                    height = 48.dp,
+                    textcolor = black,
+                    onClick = { navController.navigate(Screen.RollDice.route) },
+                )
+            } else {
+                Text(
+                    text = "Loading ... ",
+                    fontFamily = LeagueGothic,
+                    fontSize = 36.sp,
+                    color = white,
+                    modifier = Modifier
+                        .padding(horizontal = 32.dp)
+                        .fillMaxWidth()
+                        .align(Alignment.CenterHorizontally),
+                    textAlign = TextAlign.Center
+                )
             }
-            ButtonBar(
-                text = "ROLL DICE",
-                bgcolor = yellow,
-                height = 48.dp,
-                textcolor = black,
-                onClick = { navController.navigate(Screen.RollDice.route) },
-            )
             Spacer(modifier = Modifier.height(20.dp))
-            /*ButtonBar(
-                text = "TRUCO",
-                bgcolor = yellow,
-                height = 48.dp,
-                textcolor = black,
-                onClick = { navController.navigate(Screen.SetUp.createRoute(0)) },
-            )
-            Spacer(modifier = Modifier.height(20.dp))
-            ButtonBar(
-                text = "GENERALA",
-                bgcolor = yellow,
-                height = 48.dp,
-                textcolor = black,
-                onClick = { navController.navigate(Screen.SetUp.createRoute(1)) },
-            )*/
         }
 
     }

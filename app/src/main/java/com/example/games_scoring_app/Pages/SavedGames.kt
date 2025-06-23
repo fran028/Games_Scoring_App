@@ -48,7 +48,7 @@ import kotlinx.coroutines.SupervisorJob
 
 @Composable
 fun SavedGamesPage(navController: NavController) {
-    var noGames = true
+    /*var noGames = true
     val scrollState = rememberScrollState()
 
     val applicationScope = CoroutineScope(SupervisorJob())
@@ -119,5 +119,5 @@ fun SavedGamesPage(navController: NavController) {
                 )
             }
         }
-    }
+    }*/
 }

@@ -38,7 +38,7 @@ import com.example.games_scoring_app.Theme.white
 import com.example.games_scoring_app.Theme.yellow
 
 @Composable
-fun TrucoScoreboard(players: List<Players?>, maxScore: Int) {
+fun TrucoScoreboard(players: Array<String>, maxScore: Int) {
     val TAG = "Truco"
 
     val player1 = players[0]
@@ -81,7 +81,7 @@ fun TrucoScoreboard(players: List<Players?>, maxScore: Int) {
                 verticalAlignment = Alignment.Top
             ) {
                 PlayerTrucoColumn(
-                    player1!!.name,
+                    player1,
                     score1,
                     maxScore,
                     onScoreClick = { scoreValue ->
@@ -111,7 +111,7 @@ fun TrucoScoreboard(players: List<Players?>, maxScore: Int) {
                     )
                 }
                 PlayerTrucoColumn(
-                    player2!!.name,
+                    player2,
                     score2,
                     maxScore,
                     onScoreClick = { scoreValue ->

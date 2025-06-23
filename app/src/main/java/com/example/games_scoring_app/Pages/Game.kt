@@ -40,36 +40,28 @@ import com.example.games_scoring_app.Data.Players
 import com.example.games_scoring_app.Data.PlayersRepository
 import com.example.games_scoring_app.Data.ScoresRepository
 import com.example.games_scoring_app.Games.GeneralaScoreboard
-import com.example.games_scoring_app.Games.PedroScoreboard
+import com.example.games_scoring_app.Games.PuntosScoreboard
 import com.example.games_scoring_app.Games.TrucoScoreboard
 import com.example.games_scoring_app.R
 import com.example.games_scoring_app.Screen
 import com.example.games_scoring_app.Theme.LeagueGothic
 import com.example.games_scoring_app.Theme.black
-import com.example.games_scoring_app.Theme.white
 import com.example.games_scoring_app.Theme.yellow
 import com.example.games_scoring_app.Viewmodel.GameTypesViewModel
 import com.example.games_scoring_app.Viewmodel.GameTypesViewModelFactory
-import com.example.games_scoring_app.Viewmodel.GamesViewModel
-import com.example.games_scoring_app.Viewmodel.GamesViewModelFactory
-import com.example.games_scoring_app.Viewmodel.PlayersViewModel
-import com.example.games_scoring_app.Viewmodel.PlayersViewModelFactory
-import com.example.games_scoring_app.Viewmodel.ScoresViewModel
-import com.example.games_scoring_app.Viewmodel.ScoresViewModelFactory
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun GamePage(navController: NavController, gameId: Int, gameTypeId: Int, new: Boolean) {
+fun GamePage(navController: NavController, gameTypeId: Int, playerNames: Array<String> ) {
     if(gameTypeId == 0) {
         Log.d("GamePage", "Navigating to Home screen")
         navController.navigate(Screen.Home.route)
     }
     val TAG = "GamePage"
     Log.d(TAG, "--- GAME STARTED ---")
-    Log.d(TAG, "GamePage called with gameId: $gameId")
     val scrollState = rememberScrollState()
 
     val applicationScope = CoroutineScope(SupervisorJob())
@@ -77,30 +69,30 @@ fun GamePage(navController: NavController, gameId: Int, gameTypeId: Int, new: Bo
     val database = AppDatabase.getDatabase(context, applicationScope)
     val coroutineScope = rememberCoroutineScope()
 
-    val gamesRepository = GamesRepository(database.gamesDao())
+    /*val gamesRepository = GamesRepository(database.gamesDao())
     val gamesViewModelFactory = GamesViewModelFactory(gamesRepository)
-    val gamesViewModel: GamesViewModel = viewModel(factory = gamesViewModelFactory)
+    val gamesViewModel: GamesViewModel = viewModel(factory = gamesViewModelFactory)*/
 
     val gameTypesRepository = GameTypesRepository(database.gameTypesDao())
     val gameTypesViewModelFactory = GameTypesViewModelFactory(gameTypesRepository)
     val gameTypesViewModel: GameTypesViewModel = viewModel(factory = gameTypesViewModelFactory)
 
-    val playersRepository = PlayersRepository(database.playersDao())
+    /*val playersRepository = PlayersRepository(database.playersDao())
     val playersViewModelFactory = PlayersViewModelFactory(playersRepository)
-    val playersViewModel: PlayersViewModel = viewModel(factory = playersViewModelFactory)
+    val playersViewModel: PlayersViewModel = viewModel(factory = playersViewModelFactory)*/
 
     Log.d(TAG, "Viemodels setup finish")
 
 
-    val lastGame by gamesViewModel.lastGame.collectAsState()
+    //val lastGame by gamesViewModel.lastGame.collectAsState()
     val gameType= remember { mutableStateOf<GameTypes?>(null) }
-    val players = remember { mutableStateOf<List<Players>?>(null) }
+    //val players = remember { mutableStateOf<List<Players>?>(null) }
     val showScoreboard = remember { mutableStateOf(false) }
     Log.d(TAG, "Variables initialize")
 
     LaunchedEffect(key1 = Unit) {
         Log.d(TAG, "First LaunchedEffect called")
-        players.value = playersViewModel.getPlayerByGameId(gameId)
+        //players.value = playersViewModel.getPlayerByGameId(gameId)
         gameType.value = gameTypesViewModel.getGameTypeById(gameTypeId)
         showScoreboard.value = true
         Log.d(TAG, "First LaunchedEffect finish")
@@ -132,7 +124,7 @@ fun GamePage(navController: NavController, gameId: Int, gameTypeId: Int, new: Bo
                     onClick = {
                         Log.d(TAG, "NEW GAME button clicked")
                         coroutineScope.launch {
-                            val emptyGame = gamesViewModel.emptyGame()
+                            /*val emptyGame = gamesViewModel.emptyGame()
                             emptyGame.id_GameType = gameType.value!!.id
                             gamesViewModel.addNewGame(emptyGame)
                             gamesViewModel.getLastGame()
@@ -147,7 +139,8 @@ fun GamePage(navController: NavController, gameId: Int, gameTypeId: Int, new: Bo
                                 Log.d(TAG, "player: $player")
                             }
                             Log.d(TAG, "Navigating to Game screen")
-                            navController.navigate(Screen.Game.createRoute(lastGame!!.id,true, gameTypeId))
+                             */
+                            navController.navigate(Screen.Game.createRoute(gameTypeId, playerNames))
 
                         }
                     }
@@ -156,18 +149,19 @@ fun GamePage(navController: NavController, gameId: Int, gameTypeId: Int, new: Bo
                     Log.d(TAG, "gameType: ${gameType.value!!.name}")
                     Spacer(modifier = Modifier.height(20.dp))
                     if (gameType.value!!.name == "Generala") {
-                        GeneralaScoreboard(players.value!!)
+                        GeneralaScoreboard(playerNames)
                     } else if (gameType.value!!.name == "Truco") {
-                        TrucoScoreboard(players.value!!, gameType.value!!.maxScore)
-                    } else if (gameType.value!!.name == "Pedro") {
-                        PedroScoreboard(players.value!!, gameType.value!!.maxScore)
+                        TrucoScoreboard(playerNames, gameType.value!!.maxScore)
+                    } else if (gameType.value!!.name == "Puntos") {
+                        Log.d(TAG, "gameType: ${gameType.value!!.name}")
+                        PuntosScoreboard(playerNames, gameType.value!!.maxScore)
                     }
                 } else {
                     Log.d(TAG, "gameType is empty")
                 }
             }
         }  else {
-            LoadingMessage("LOADING PAGE . . .")
+            LoadingMessage("LOADING")
         }
     }
 
