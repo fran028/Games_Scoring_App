@@ -11,4 +11,6 @@ data class GameTypes(
     @ColumnInfo(name = "max_Players") val maxPlayers: Int,
     @ColumnInfo(name = "min_Players") val minPlayers: Int,
     @ColumnInfo(name = "max_Score") val maxScore: Int,
+    @ColumnInfo(name = "min_Score") val minScore: Int = 0,
+    @ColumnInfo(name = "type") val type: String = ""
 )

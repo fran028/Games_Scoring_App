@@ -124,7 +124,6 @@ fun SetupPage(navController: NavController, gameType: Int) {
             Log.d(TAG, "gameTypes is not empty")
             val newGameType = gameTypesViewModel.getGameTypeById(gameType)!!
             thisGameType.value = newGameType // Update the State
-            //emptyGame.id_GameType = newGameType.id
             selectedPlayerCount = minPlayers
             Log.d(TAG, "selectedPlayerCount: $selectedPlayerCount")
             names.clear()
@@ -150,21 +149,21 @@ fun SetupPage(navController: NavController, gameType: Int) {
     ) {
         if(showSetup.value) {
             PageTitle("GAME SETUP", R.drawable.games_retro, navController)
+            if(thisGameType.value.name != "Truco") {
 
-            Spacer(modifier = Modifier.height(20.dp))
-            Text(
-                text = "PLAYERS AMOUNT",
-                fontFamily = LeagueGothic,
-                fontSize = 48.sp,
-                color = white,
-                modifier = Modifier
-                    .padding(horizontal = 32.dp)
-                    .fillMaxWidth()
-                    .align(Alignment.CenterHorizontally),
-                textAlign = TextAlign.Left
-            )
+                Spacer(modifier = Modifier.height(20.dp))
+                Text(
+                    text = "PLAYERS AMOUNT",
+                    fontFamily = LeagueGothic,
+                    fontSize = 48.sp,
+                    color = white,
+                    modifier = Modifier
+                        .padding(horizontal = 32.dp)
+                        .fillMaxWidth()
+                        .align(Alignment.CenterHorizontally),
+                    textAlign = TextAlign.Left
+                )
 
-            Column(modifier = Modifier.padding(horizontal = 20.dp )) {
                 PlayerAmountGrid(
                     maxPlayers = maxPlayers,
                     minPlayers = minPlayers,
@@ -177,10 +176,12 @@ fun SetupPage(navController: NavController, gameType: Int) {
                     selectedbgcolor = blue,
                     bgcolor = white
                 )
+            }
 
+            Column(modifier = Modifier.padding(horizontal = 20.dp )) {
                 Spacer(modifier = Modifier.height(20.dp))
                 Text(
-                    text = "PLAYERS NAMES",
+                    text = if(thisGameType.value.name == "Truco") "TEAM NAMES" else "PLAYERS NAMES",
                     fontFamily = LeagueGothic,
                     fontSize = 48.sp,
                     color = white,

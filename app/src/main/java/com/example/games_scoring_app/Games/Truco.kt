@@ -152,7 +152,7 @@ private fun PlayerTrucoColumn(
             text = playerName,
             fontFamily = LeagueGothic,
             fontSize = 48.sp,
-            color = if(score >= maxScore) yellow else white,
+            color = if(score >= maxScore) yellow else if(score >= maxScore/2) green else white,
             modifier = Modifier
                 .fillMaxWidth()
                 .align(Alignment.CenterHorizontally),

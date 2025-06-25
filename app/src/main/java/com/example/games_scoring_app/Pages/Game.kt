@@ -40,8 +40,10 @@ import com.example.games_scoring_app.Data.Players
 import com.example.games_scoring_app.Data.PlayersRepository
 import com.example.games_scoring_app.Data.ScoresRepository
 import com.example.games_scoring_app.Games.GeneralaScoreboard
+import com.example.games_scoring_app.Games.LevelsScoreboard
 import com.example.games_scoring_app.Games.PuntosScoreboard
 import com.example.games_scoring_app.Games.TrucoScoreboard
+import com.example.games_scoring_app.Games.RankingScoreboard
 import com.example.games_scoring_app.R
 import com.example.games_scoring_app.Screen
 import com.example.games_scoring_app.Theme.LeagueGothic
@@ -146,15 +148,25 @@ fun GamePage(navController: NavController, gameTypeId: Int, playerNames: Array<S
                     }
                 )
                 if (gameType.value!!.name.isNotBlank()) {
-                    Log.d(TAG, "gameType: ${gameType.value!!.name}")
+
                     Spacer(modifier = Modifier.height(20.dp))
-                    if (gameType.value!!.name == "Generala") {
-                        GeneralaScoreboard(playerNames)
-                    } else if (gameType.value!!.name == "Truco") {
-                        TrucoScoreboard(playerNames, gameType.value!!.maxScore)
-                    } else if (gameType.value!!.name == "Puntos") {
-                        Log.d(TAG, "gameType: ${gameType.value!!.name}")
-                        PuntosScoreboard(playerNames, gameType.value!!.maxScore)
+                    Log.d(TAG, "gameType: ${gameType.value!!.name}")
+                    when (gameType.value!!.name) {
+                        "Generala" -> {
+                            GeneralaScoreboard(playerNames)
+                        }
+                        "Truco" -> {
+                            TrucoScoreboard(playerNames, gameType.value!!.maxScore)
+                        }
+                        "Points" -> {
+                            PuntosScoreboard(playerNames, gameType.value!!.maxScore)
+                        }
+                        "Ranking" -> {
+                            RankingScoreboard(playerNames)
+                        }
+                        "Levels" -> {
+                            LevelsScoreboard(playerNames)
+                        }
                     }
                 } else {
                     Log.d(TAG, "gameType is empty")

@@ -154,13 +154,13 @@ fun HomePage(navController: NavController) {
                         Spacer(modifier = Modifier.height(20.dp))
                     }
                 }
-                ButtonBar(
+                /*ButtonBar(
                     text = "ROLL DICE",
                     bgcolor = yellow,
                     height = 48.dp,
                     textcolor = black,
                     onClick = { navController.navigate(Screen.RollDice.route) },
-                )
+                )*/
             } else {
                 Text(
                     text = "Loading ... ",

@@ -31,11 +31,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.games_scoring_app.Data.Players
 import com.example.games_scoring_app.Theme.LeagueGothic
 import com.example.games_scoring_app.Theme.black
 import com.example.games_scoring_app.Theme.green
-import com.example.games_scoring_app.Theme.red
 import com.example.games_scoring_app.Theme.white
 import kotlin.text.toIntOrNull
 
@@ -138,7 +136,7 @@ fun PuntosScoreboard(players: Array<String>, maxScore: Int) {
 }
 
 @Composable
-fun PlayerPuntosColumn(
+private fun PlayerPuntosColumn(
     playerName: String,
     scores: MutableState<List<Int>>, // Changed type
     maxScore: Int,
@@ -213,7 +211,7 @@ fun PlayerPuntosColumn(
 }
 
 @Composable
-fun AddScorePopup(
+private fun AddScorePopup(
     onDismiss: () -> Unit,
     onConfirm: () -> Unit,
     inputValue: String,
@@ -243,7 +241,7 @@ fun AddScorePopup(
     )
 }
 
-fun TotalScore(scores: List<Int>): Int {
+private fun TotalScore(scores: List<Int>): Int {
     var total = 0
     for (score in scores) {
         total += score

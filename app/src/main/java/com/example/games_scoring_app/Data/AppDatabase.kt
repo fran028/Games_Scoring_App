@@ -15,7 +15,7 @@ import kotlinx.coroutines.launch
 
 @Database(
     entities = [Players::class, Games::class, Scores::class, GameTypes::class],
-    version = 1,
+    version = 2,
     exportSchema = true,
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -33,7 +33,7 @@ abstract class AppDatabase : RoomDatabase() {
         fun getDatabase(context: Context, scope: CoroutineScope): AppDatabase {
             Log.d("AppDatabase", "getDatabase called")
             val appContext = context.applicationContext
-            return INSTANCE ?: synchronized(this) {
+            if(INSTANCE == null){
                 Log.d("AppDatabase", "Creating new database instance")
                 val instance = Room.databaseBuilder(
                     appContext,
@@ -43,15 +43,22 @@ abstract class AppDatabase : RoomDatabase() {
                     .fallbackToDestructiveMigration()
                     .addCallback(AppDatabaseCallback(scope, appContext))
                     .build()
-                //signalDatabaseOperational()
                 INSTANCE = instance
-                instance
-
             }
+            Log.d("AppDatabase", "Returning existing database instance")
+            signalDatabaseOperational()
+            return INSTANCE!!
         }
         private fun signalDatabaseOperational() {
             if (!_isDatabaseReady.value) { // Only set to true if it's currently false
                 _isDatabaseReady.value = true
+                Log.d("AppDatabase", "Database signaled as operational (created/opened and populated if new).")
+            }
+        }
+
+        private fun stopSignalDatabaseOperational() {
+            if (_isDatabaseReady.value) { // Only set to false if it's currently true
+                _isDatabaseReady.value = false
                 Log.d("AppDatabase", "Database signaled as operational (created/opened and populated if new).")
             }
         }
@@ -60,33 +67,37 @@ abstract class AppDatabase : RoomDatabase() {
         override fun onCreate(db: SupportSQLiteDatabase) {
             Log.d("AppDatabase", "onCreate called")
             super.onCreate(db)
-            scope.launch(Dispatchers.IO) {
-                val database = INSTANCE ?: AppDatabase.getDatabase(appContext, scope)
-
-                Log.d("AppDatabase", "Pre-populating database...")
-                populateDatabase(database.gameTypesDao())
-                Log.d("AppDatabase", "Database pre-populated.")
-                signalDatabaseOperational() // Signal that the database is ready
-            }
 
         }
 
         override fun onOpen(db: SupportSQLiteDatabase) {
             Log.d("AppDatabase", "onOpen called")
             super.onOpen(db)
-            Log.d("AppDatabase", "onOpen called - Database is being opened.")
-            signalDatabaseOperational()
+            scope.launch(Dispatchers.IO) {
+                val database = INSTANCE ?: AppDatabase.getDatabase(appContext, scope)
+                stopSignalDatabaseOperational()
+                Log.d("AppDatabase", "Pre-populating database...")
+                populateDatabase(database.gameTypesDao())
+                Log.d("AppDatabase", "Database pre-populated.")
+                signalDatabaseOperational()
+            }
+
         }
 
 
         suspend fun populateDatabase(gameTypesDao: GameTypesDao) {
+
+            gameTypesDao.deleteGamesType()
+
             // Add your initial data here using your DAO
             Log.d("AppDatabase", "Adding initial data to database...")
             val item1 = GameTypes(
                 name = "Truco",
                 maxPlayers = 2,
                 minPlayers = 2,
-                maxScore = 30
+                maxScore = 30,
+                type = "Cartas"
+
             )
             gameTypesDao.insertGameType(item1)
             Log.d("AppDatabase", "Truco added to database")
@@ -95,19 +106,41 @@ abstract class AppDatabase : RoomDatabase() {
                 name = "Generala",
                 maxPlayers = 8,
                 minPlayers = 1,
-                maxScore = 370
+                maxScore = 370,
+                type = "Dados"
             )
             gameTypesDao.insertGameType(item2)
             Log.d("AppDatabase", "Generala added to database")
 
             val item3 = GameTypes(
-                name = "Puntos",
+                name = "Points",
                 maxPlayers = 8,
                 minPlayers = 2,
-                maxScore = 1000
+                maxScore = 1000,
+                type = "Generico"
             )
             gameTypesDao.insertGameType(item3)
+            Log.d("AppDatabase", "Points added to database")
+
+            val item4 = GameTypes(
+                name = "Ranking",
+                maxPlayers = 8,
+                minPlayers = 3,
+                maxScore = 0,
+                type = "Generico"
+            )
+            gameTypesDao.insertGameType(item4)
             Log.d("AppDatabase", "Puntos added to database")
+
+            val item5 = GameTypes(
+                name = "Levels",
+                maxPlayers = 8,
+                minPlayers = 1,
+                maxScore = 0,
+                type = "Generico"
+            )
+            gameTypesDao.insertGameType(item5)
+            Log.d("AppDatabase", "Levels added to database")
 
         }
     }
