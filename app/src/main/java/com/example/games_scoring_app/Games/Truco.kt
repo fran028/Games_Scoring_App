@@ -106,7 +106,7 @@ fun TrucoScoreboard(players: Array<String>, maxScore: Int) {
                         modifier = Modifier
                             .width(10.dp)
                             .height(620.dp)
-                            .background(white)
+                            .background(white, shape = RoundedCornerShape(5.dp))
                             .border(2.dp, white, shape = RoundedCornerShape(5.dp))
                     )
                 }
@@ -147,8 +147,26 @@ private fun PlayerTrucoColumn(
         horizontalAlignment = Alignment.CenterHorizontally,
 
     ) {
-
-        Text(
+        Box(
+            modifier = Modifier
+                .width(125.dp)
+                .height(45.dp)
+                .background(
+                    if(score >= maxScore) yellow else if(score >= maxScore/2) green else white,
+                    shape = RoundedCornerShape(7.5.dp)
+                )
+                .padding(2.5.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = playerName,
+                fontFamily = LeagueGothic,
+                fontSize = 32.sp,
+                color = black,
+                textAlign = TextAlign.Right,
+            )
+        }
+        /*Text(
             text = playerName,
             fontFamily = LeagueGothic,
             fontSize = 48.sp,
@@ -157,16 +175,16 @@ private fun PlayerTrucoColumn(
                 .fillMaxWidth()
                 .align(Alignment.CenterHorizontally),
             textAlign = TextAlign.Center,
-        )
-        Spacer(modifier = Modifier.height(10.dp))
+        )*/
+        Spacer(modifier = Modifier.height(16.dp))
         for (i in 1..maxScore){
             val backgroundColor = if (i <= score) if (i > maxScore/2) green else blue else white
             Box(
                 modifier = Modifier
-                    .width(100.dp)
+                    .width(125.dp)
                     .height(9.dp)
                     .padding(0.dp)
-                    .background(backgroundColor)
+                    .background(backgroundColor, shape = RoundedCornerShape(2.5.dp))
                     .border(2.dp, backgroundColor, shape = RoundedCornerShape(5.dp))
                     .clickable { // Add the clickable modifier here
                         onScoreClick(i)

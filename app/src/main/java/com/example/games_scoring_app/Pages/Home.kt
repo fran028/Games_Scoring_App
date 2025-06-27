@@ -34,6 +34,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.games_scoring_app.Components.ButtonDateBar
 import com.example.games_scoring_app.Components.ButtonBar
+import com.example.games_scoring_app.Components.IconButtonBar
 import com.example.games_scoring_app.R
 import com.example.games_scoring_app.Components.PageTitle
 import com.example.games_scoring_app.Data.AppDatabase
@@ -44,6 +45,8 @@ import com.example.games_scoring_app.Theme.black
 import com.example.games_scoring_app.Theme.white
 import com.example.games_scoring_app.Theme.LeagueGothic
 import com.example.games_scoring_app.Theme.blue
+import com.example.games_scoring_app.Theme.green
+import com.example.games_scoring_app.Theme.red
 import com.example.games_scoring_app.Theme.yellow
 import com.example.games_scoring_app.Viewmodel.GameTypesViewModel
 import com.example.games_scoring_app.Viewmodel.GameTypesViewModelFactory
@@ -129,7 +132,7 @@ fun HomePage(navController: NavController) {
         }*/
         Spacer(modifier = Modifier.height(20.dp))
         Text(
-            text = "GAMES",
+            text = "ScoreBoards",
             fontFamily = LeagueGothic,
             fontSize = 48.sp,
             color = white,
@@ -144,12 +147,40 @@ fun HomePage(navController: NavController) {
             if (gameTypes.isNotEmpty()) {
                 for (gameType in gameTypes) {
                     if (gameType != null) {
-                        ButtonBar(
+                        var buttonIconId = 0
+                        var buttonColor = yellow
+                        var textcolor = black
+                        when (gameType.type) {
+                            "Dados" -> {
+                                buttonIconId = R.drawable.dices
+                                buttonColor = blue
+                                textcolor = black
+                            }
+                            "Cartas" -> {
+                                buttonIconId = R.drawable.card
+                                buttonColor = yellow
+                                textcolor = black
+                            }
+                            "Generico" -> {
+                                buttonIconId = R.drawable.paper
+                                buttonColor = white
+                                textcolor = black
+                            }
+                            else -> {
+                                buttonIconId = R.drawable.paper
+                                buttonColor = white
+                                textcolor = black
+                            }
+                        }
+                        IconButtonBar(
                             text = gameType.name.uppercase(),
-                            bgcolor = yellow,
+                            bgcolor = buttonColor,
                             height = 48.dp,
-                            textcolor = black,
+                            textcolor = textcolor,
                             onClick = { navController.navigate(Screen.SetUp.createRoute(gameType.id)) },
+                            icon = buttonIconId,
+                            iconSize = 32.dp,
+                            doubleIcon = true
                         )
                         Spacer(modifier = Modifier.height(20.dp))
                     }

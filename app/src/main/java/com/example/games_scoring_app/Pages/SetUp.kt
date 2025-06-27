@@ -44,6 +44,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.games_scoring_app.Components.ButtonBar
+import com.example.games_scoring_app.Components.IconButtonBar
 import com.example.games_scoring_app.Components.LoadingMessage
 import com.example.games_scoring_app.Components.PageTitle
 import com.example.games_scoring_app.Components.PlayerAmountGrid
@@ -60,6 +61,7 @@ import com.example.games_scoring_app.Theme.black
 import com.example.games_scoring_app.Theme.blue
 import com.example.games_scoring_app.Theme.green
 import com.example.games_scoring_app.Theme.white
+import com.example.games_scoring_app.Theme.yellow
 import com.example.games_scoring_app.Viewmodel.GameTypesViewModel
 import com.example.games_scoring_app.Viewmodel.GameTypesViewModelFactory
 import com.example.games_scoring_app.Viewmodel.GamesViewModel
@@ -149,11 +151,49 @@ fun SetupPage(navController: NavController, gameType: Int) {
     ) {
         if(showSetup.value) {
             PageTitle("GAME SETUP", R.drawable.games_retro, navController)
-            if(thisGameType.value.name != "Truco") {
+            Spacer(modifier = Modifier.height(28.dp))
+            var buttonColor = yellow
+            var textcolor = black
+            var buttonIconId = 0
+            when (thisGameType.value.type) {
+                "Dados" -> {
+                    buttonIconId = R.drawable.dices
+                    buttonColor = blue
+                    textcolor = black
+                }
+                "Cartas" -> {
+                    buttonIconId = R.drawable.card
+                    buttonColor = yellow
+                    textcolor = black
+                }
+                "Generico" -> {
+                    buttonIconId = R.drawable.paper
+                    buttonColor = white
+                    textcolor = black
+                }
+                else -> {
+                    buttonIconId = R.drawable.paper
+                    buttonColor = white
+                    textcolor = black
+                }
+            }
+            Column (Modifier.padding(horizontal = 30.dp )) {
+                IconButtonBar(
+                    text = thisGameType.value.name.uppercase(),
+                    bgcolor = buttonColor,
+                    height = 48.dp,
+                    textcolor = textcolor,
+                    onClick = { },
+                    icon = buttonIconId,
+                    iconSize = 32.dp,
+                    doubleIcon = true
+                )
+            }
 
-                Spacer(modifier = Modifier.height(20.dp))
+            if(thisGameType.value.name != "Truco") {
+                Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    text = "PLAYERS AMOUNT",
+                    text = "Player Amount",
                     fontFamily = LeagueGothic,
                     fontSize = 48.sp,
                     color = white,
@@ -181,7 +221,7 @@ fun SetupPage(navController: NavController, gameType: Int) {
             Column(modifier = Modifier.padding(horizontal = 20.dp )) {
                 Spacer(modifier = Modifier.height(20.dp))
                 Text(
-                    text = if(thisGameType.value.name == "Truco") "TEAM NAMES" else "PLAYERS NAMES",
+                    text = if(thisGameType.value.name == "Truco") "Team Names" else "Player Names",
                     fontFamily = LeagueGothic,
                     fontSize = 48.sp,
                     color = white,
@@ -194,7 +234,7 @@ fun SetupPage(navController: NavController, gameType: Int) {
                 for (i in 0..maxPlayers-1) {
                     val isSelected = i < selectedPlayerCount
                     var inputcolor = white
-                    if (isSelected) {
+                    if (isSelected && thisGameType.value.name != "Truco"){
                         inputcolor = blue
                     }
 
@@ -240,7 +280,11 @@ fun SetupPage(navController: NavController, gameType: Int) {
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text)
 
                     )
-                    Spacer(modifier = Modifier.height(6.dp))
+                    if(thisGameType.value.name != "Truco") {
+                        Spacer(modifier = Modifier.height(6.dp))
+                    } else {
+                        Spacer(modifier = Modifier.height(12.dp))
+                    }
                 }
                 Spacer(modifier = Modifier.height(20.dp))
                 Row (modifier = Modifier
