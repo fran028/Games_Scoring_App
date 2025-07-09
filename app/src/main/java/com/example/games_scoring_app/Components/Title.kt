@@ -38,12 +38,14 @@ fun PageTitle(title: String, image: Int, navController: NavController) {
         modifier = Modifier
             .fillMaxWidth()
             .height(160.dp)
+            .padding(0.dp)
+            .background(Color.Transparent, /*shape = androidx.compose.foundation.shape.RoundedCornerShape(50.dp)*/)
     ) {
         Image(
             painter = painterResource(id = image),
             contentDescription = "Background Image",
             modifier = Modifier.fillMaxSize(),
-            contentScale = ContentScale.Crop
+            contentScale = ContentScale.FillWidth
         )
         Box(
             modifier = Modifier
@@ -95,11 +97,11 @@ fun PageTitle(title: String, image: Int, navController: NavController) {
 
                     )*/
                     Image(
-                        painter = painterResource(id = R.drawable.logobig),
+                        painter = painterResource(id = R.drawable.setting_line),
                         contentDescription = "App Image",
-                        modifier = Modifier.size(50.dp)
+                        modifier = Modifier.size(55.dp)
                             .clickable {
-                                navController.navigate(Screen.Home.route)
+                                navController.navigate(Screen.Settings.route)
                             }
                     )
                 }

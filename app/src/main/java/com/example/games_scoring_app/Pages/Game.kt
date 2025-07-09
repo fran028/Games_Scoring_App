@@ -39,6 +39,7 @@ import com.example.games_scoring_app.Data.GamesRepository
 import com.example.games_scoring_app.Data.Players
 import com.example.games_scoring_app.Data.PlayersRepository
 import com.example.games_scoring_app.Data.ScoresRepository
+import com.example.games_scoring_app.Data.SettingsRepository
 import com.example.games_scoring_app.Games.GeneralaScoreboard
 import com.example.games_scoring_app.Games.LevelsScoreboard
 import com.example.games_scoring_app.Games.PuntosScoreboard
@@ -48,9 +49,14 @@ import com.example.games_scoring_app.R
 import com.example.games_scoring_app.Screen
 import com.example.games_scoring_app.Theme.LeagueGothic
 import com.example.games_scoring_app.Theme.black
+import com.example.games_scoring_app.Theme.blue
+import com.example.games_scoring_app.Theme.cream
+import com.example.games_scoring_app.Theme.white
 import com.example.games_scoring_app.Theme.yellow
 import com.example.games_scoring_app.Viewmodel.GameTypesViewModel
 import com.example.games_scoring_app.Viewmodel.GameTypesViewModelFactory
+import com.example.games_scoring_app.Viewmodel.SettingsViewModel
+import com.example.games_scoring_app.Viewmodel.SettingsViewModelFactory
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
@@ -83,6 +89,10 @@ fun GamePage(navController: NavController, gameTypeId: Int, playerNames: Array<S
     val playersViewModelFactory = PlayersViewModelFactory(playersRepository)
     val playersViewModel: PlayersViewModel = viewModel(factory = playersViewModelFactory)*/
 
+    val settingsRepository = SettingsRepository(database.settingsDao())
+    val settingsViewModelFactory = SettingsViewModelFactory(settingsRepository)
+    val settingsViewModel: SettingsViewModel = viewModel(factory = settingsViewModelFactory)
+
     Log.d(TAG, "Viemodels setup finish")
 
 
@@ -90,6 +100,7 @@ fun GamePage(navController: NavController, gameTypeId: Int, playerNames: Array<S
     val gameType= remember { mutableStateOf<GameTypes?>(null) }
     //val players = remember { mutableStateOf<List<Players>?>(null) }
     val showScoreboard = remember { mutableStateOf(false) }
+    val themeMode by settingsViewModel.themeMode.collectAsState()
     Log.d(TAG, "Variables initialize")
 
     LaunchedEffect(key1 = Unit) {
@@ -97,22 +108,43 @@ fun GamePage(navController: NavController, gameTypeId: Int, playerNames: Array<S
         //players.value = playersViewModel.getPlayerByGameId(gameId)
         gameType.value = gameTypesViewModel.getGameTypeById(gameTypeId)
         showScoreboard.value = true
+        settingsViewModel.getThemeMode()
         Log.d(TAG, "First LaunchedEffect finish")
     }
 
-    val titelImage = remember { mutableStateOf(R.drawable.dice_far) }
+    val titelImage = remember { mutableStateOf(R.drawable.fondo_cartas_truco) }
+
+    val backgroundColor = if (themeMode == 0) black else cream
+    val fontColor = if (themeMode == 0) white else black
+    val buttonColor = if (themeMode == 0) white else black
+    val buttonFontColor = if (themeMode == 0) black else white
+
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(black)
+            .background(backgroundColor)
             .verticalScroll(scrollState),
         horizontalAlignment = Alignment.Start,
         verticalArrangement = Arrangement.Top
     ) {
         if (showScoreboard.value) {
-            if(gameType.value!!.name == "Generala"){
-                titelImage.value = R.drawable.dice_far
+            when (gameType.value!!.name) {
+                "Generala" -> {
+                    titelImage.value = R.drawable.dice_far
+                }
+                "Truco" -> {
+                    titelImage.value = R.drawable.fondo_cartas_truco
+                }
+                "Points" -> {
+                    titelImage.value = R.drawable.papers
+                }
+                "Ranking" -> {
+                    titelImage.value = R.drawable.papers
+                    }
+                "Levels" -> {
+                    titelImage.value = R.drawable.papers
+                }
             }
             PageTitle(gameType.value!!.name.uppercase(), titelImage.value, navController)
             Spacer(modifier = Modifier.height(20.dp))
@@ -153,19 +185,19 @@ fun GamePage(navController: NavController, gameTypeId: Int, playerNames: Array<S
                     Log.d(TAG, "gameType: ${gameType.value!!.name}")
                     when (gameType.value!!.name) {
                         "Generala" -> {
-                            GeneralaScoreboard(playerNames)
+                            GeneralaScoreboard(playerNames, themeMode)
                         }
                         "Truco" -> {
-                            TrucoScoreboard(playerNames, gameType.value!!.maxScore)
+                            TrucoScoreboard(playerNames, gameType.value!!.maxScore, themeMode)
                         }
                         "Points" -> {
-                            PuntosScoreboard(playerNames, gameType.value!!.maxScore)
+                            PuntosScoreboard(playerNames, gameType.value!!.maxScore, themeMode)
                         }
                         "Ranking" -> {
-                            RankingScoreboard(playerNames)
+                            RankingScoreboard(playerNames, themeMode)
                         }
                         "Levels" -> {
-                            LevelsScoreboard(playerNames)
+                            LevelsScoreboard(playerNames, themeMode)
                         }
                     }
                 } else {
@@ -173,7 +205,7 @@ fun GamePage(navController: NavController, gameTypeId: Int, playerNames: Array<S
                 }
             }
         }  else {
-            LoadingMessage("LOADING")
+            LoadingMessage("LOADING", themeMode)
         }
     }
 

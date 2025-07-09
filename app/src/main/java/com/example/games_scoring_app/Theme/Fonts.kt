@@ -12,8 +12,9 @@ val provider = GoogleFont.Provider(
     providerPackage = "com.google.android.gms",
     certificates = R.array.com_google_android_gms_fonts_certs
 )
-
+/*
 val fontName = GoogleFont("League Gothic")
+val secondFontName = GoogleFont("Lato")
 
 val fontFamily = FontFamily(
     Font(
@@ -22,7 +23,7 @@ val fontFamily = FontFamily(
         weight = FontWeight.Normal
 
     )
-)
+)*/
 
 val LeagueGothic = FontFamily(
     androidx.compose.ui.text.font.Font(R.font.league_gothic, FontWeight.Normal)

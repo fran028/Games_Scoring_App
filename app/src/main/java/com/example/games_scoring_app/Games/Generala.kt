@@ -64,7 +64,7 @@ fun calculateTotals(playerListStates: List<SnapshotStateList<Int>>, valoresGener
     }
 }
 @Composable
-fun GeneralaScoreboard(players: Array<String>) {
+fun GeneralaScoreboard(players: Array<String>, themeMode: Int) {
     val TAG = "Generala"
 
     val opcionesGenerala = listOf("1", "2", "3", "4", "5", "6", "Escalera", "Full", "Poker", "Generala", "Generala x2")
@@ -105,10 +105,15 @@ fun GeneralaScoreboard(players: Array<String>) {
         Log.d(TAG, "scoreChanges: $scoreChanges")
     }
 
+    val backgroundColor = if (themeMode == 0) black else white
+    val fontColor = if (themeMode == 0) white else black
+    val buttonColor = if (themeMode == 0) white else black
+    val buttonFontColor = if (themeMode == 0) black else white
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .background(black)
+            .background(backgroundColor)
             .padding(0.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Top
@@ -131,7 +136,7 @@ fun GeneralaScoreboard(players: Array<String>) {
                     modifier = Modifier
                         .width(90.dp)
                         .height(45.dp)
-                        .background(white, shape = RoundedCornerShape(7.5.dp))
+                        .background(buttonColor, shape = RoundedCornerShape(7.5.dp))
                         .padding(2.5.dp) ,
                     contentAlignment = Alignment.CenterEnd
                 ) {
@@ -139,7 +144,7 @@ fun GeneralaScoreboard(players: Array<String>) {
                         text = "PLAYERS",
                         fontFamily = LeagueGothic,
                         fontSize = 24.sp,
-                        color = black,
+                        color = buttonFontColor,
                         modifier = Modifier.padding(end = 4.dp),
                         textAlign = TextAlign.Right,
                     )
@@ -173,7 +178,7 @@ fun GeneralaScoreboard(players: Array<String>) {
                     modifier = Modifier
                         .width(90.dp)
                         .height(45.dp)
-                        .background(white, shape = RoundedCornerShape(7.5.dp))
+                        .background(buttonColor, shape = RoundedCornerShape(7.5.dp))
                         .padding(2.5.dp) ,
                     contentAlignment = Alignment.CenterEnd
                 ) {
@@ -181,7 +186,7 @@ fun GeneralaScoreboard(players: Array<String>) {
                         text = "TOTAL",
                         fontFamily = LeagueGothic,
                         fontSize = 24.sp,
-                        color = black,
+                        color = buttonFontColor,
                         modifier = Modifier.padding(end = 4.dp),
                         textAlign = TextAlign.Right,
                     )
@@ -237,14 +242,19 @@ fun GeneralaScoreboard(players: Array<String>) {
                                 val currentOptionIndex = playerListStates[i][j]
                                 val currentValue = valoresGenerala[j].getOrElse(currentOptionIndex) { "-" }
                                 val boxBackgroundColor = when {
-                                    currentValue == "x" -> black // Your desired black color
+                                    currentValue == "x" -> backgroundColor // Your desired black color
                                     currentValue == "-" -> gray // Your desired gray color
                                     j >= 6 && currentOptionIndex == 2 -> yellow // Define 'yellow' in your Theme or use Color.Yellow
-                                    else -> white // Your default white color
+                                    else -> buttonColor // Your default white color
                                 }
 
                                 // Determine text color for readability, especially if background is black
-                                val textColor = if (currentValue == "x") white else black
+                                val textColor =  when {
+                                    currentValue == "x" -> fontColor // Your desired black color
+                                    currentValue == "-" -> white // Your desired gray color
+                                    j >= 6 && currentOptionIndex == 2 -> black // Define 'yellow' in your Theme or use Color.Yellow
+                                    else -> buttonFontColor // Your default white color
+                                }
                                  Box(
                                     modifier = Modifier
                                         .width(width)
@@ -268,7 +278,7 @@ fun GeneralaScoreboard(players: Array<String>) {
                                 modifier = Modifier
                                     .width(width)
                                     .height(45.dp)
-                                    .background(white, shape = RoundedCornerShape(7.5.dp))
+                                    .background(buttonColor, shape = RoundedCornerShape(7.5.dp))
                                     .padding(2.5.dp) ,
                                 contentAlignment = Alignment.Center
                             ) {
@@ -276,7 +286,7 @@ fun GeneralaScoreboard(players: Array<String>) {
                                     text = playerTotals[i].toString(),
                                     fontFamily = LeagueGothic,
                                     fontSize = 24.sp,
-                                    color = black,
+                                    color = buttonFontColor,
                                     textAlign = TextAlign.Right,
                                 )
                             }

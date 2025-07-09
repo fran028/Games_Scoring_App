@@ -24,6 +24,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -33,22 +35,29 @@ import com.example.games_scoring_app.Data.Scores
 import com.example.games_scoring_app.Theme.LeagueGothic
 import com.example.games_scoring_app.Theme.black
 import com.example.games_scoring_app.Theme.blue
+import com.example.games_scoring_app.Theme.gray
 import com.example.games_scoring_app.Theme.green
 import com.example.games_scoring_app.Theme.white
 import com.example.games_scoring_app.Theme.yellow
 
 @Composable
-fun TrucoScoreboard(players: Array<String>, maxScore: Int) {
+fun TrucoScoreboard(players: Array<String>, maxScore: Int, themeMode: Int) {
     val TAG = "Truco"
 
     val player1 = players[0]
     val player2 = players[1]
+
+    val backgroundColor = if (themeMode == 0) black else white
+    val fontColor = if (themeMode == 0) white else black
+    val buttonColor = if (themeMode == 0) white else black
+    val buttonFontColor = if (themeMode == 0) black else white
+
     if( player1 == null || player2 == null){
         Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .fillMaxSize()
-                .background(black)
+                .background(backgroundColor)
                 .padding(0.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
@@ -57,7 +66,7 @@ fun TrucoScoreboard(players: Array<String>, maxScore: Int) {
                 text = "DATA ERROR",
                 fontFamily = LeagueGothic,
                 fontSize = 48.sp,
-                color = white,
+                color = fontColor,
                 modifier = Modifier
             )
         }
@@ -68,7 +77,7 @@ fun TrucoScoreboard(players: Array<String>, maxScore: Int) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(black)
+                .background(backgroundColor)
                 .padding(0.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Top
@@ -87,13 +96,17 @@ fun TrucoScoreboard(players: Array<String>, maxScore: Int) {
                     onScoreClick = { scoreValue ->
                         Log.d(TAG, "scoreValue: ${scoreValue}")
                         Log.d(TAG, "oldScore: ${score1}")
-                        if (score1 <= scoreValue) {
+                        /*if (score1 <= scoreValue) {
                             score1 = score1 + 1
                         } else if (score1 > 0) {
                             score1 = score1 - 1
-                        }
+                        }*/
+                        score1 = scoreValue
                         Log.d(TAG, "newScore: ${score1}")
-                    }
+                    },
+                    buttonColor = buttonColor,
+                    buttonFontColor = buttonFontColor,
+                    fontColor = fontColor
                 )
                 Column(
                     modifier = Modifier
@@ -105,9 +118,8 @@ fun TrucoScoreboard(players: Array<String>, maxScore: Int) {
                     Box(
                         modifier = Modifier
                             .width(10.dp)
-                            .height(620.dp)
-                            .background(white, shape = RoundedCornerShape(5.dp))
-                            .border(2.dp, white, shape = RoundedCornerShape(5.dp))
+                            .height(750.dp)
+                            .background(buttonColor, shape = RoundedCornerShape(5.dp))
                     )
                 }
                 PlayerTrucoColumn(
@@ -117,15 +129,20 @@ fun TrucoScoreboard(players: Array<String>, maxScore: Int) {
                     onScoreClick = { scoreValue ->
                         Log.d(TAG, "scoreValue: ${scoreValue}")
                         Log.d(TAG, "oldScore: ${score2}")
-                        if (score2 <= scoreValue) {
+                        /*if (score2 <= scoreValue) {
                             score2 = score2 + 1
                         } else if (score2 > 0) {
                             score2 = score2 - 1
-                        }
+                        }*/
+                        score2 = scoreValue
                         Log.d(TAG, "newScore: ${score2}")
-                    }
+                    },
+                    buttonColor = buttonColor,
+                    buttonFontColor = buttonFontColor,
+                    fontColor = fontColor
                 )
             }
+            Spacer(modifier = Modifier.height(20.dp))
 
         }
     }
@@ -137,6 +154,9 @@ private fun PlayerTrucoColumn(
     score: Int,
     maxScore: Int,
     onScoreClick: (Int) -> Unit,
+    buttonColor: Color,
+    buttonFontColor: Color,
+    fontColor: Color
 ){
     val TAG = "Truco"
     Column(
@@ -152,7 +172,7 @@ private fun PlayerTrucoColumn(
                 .width(125.dp)
                 .height(45.dp)
                 .background(
-                    if(score >= maxScore) yellow else if(score >= maxScore/2) green else white,
+                    if(score >= maxScore) yellow else if(score >= maxScore/2) green else buttonColor,
                     shape = RoundedCornerShape(7.5.dp)
                 )
                 .padding(2.5.dp),
@@ -162,7 +182,7 @@ private fun PlayerTrucoColumn(
                 text = playerName,
                 fontFamily = LeagueGothic,
                 fontSize = 32.sp,
-                color = black,
+                color = if(score >= maxScore || score >= maxScore/2) black else buttonFontColor,
                 textAlign = TextAlign.Right,
             )
         }
@@ -176,26 +196,93 @@ private fun PlayerTrucoColumn(
                 .align(Alignment.CenterHorizontally),
             textAlign = TextAlign.Center,
         )*/
+        val lineLenght = 80.dp
+        val lineThick = 9.dp
+        val diagonalLineLenght = 80.dp
+        val rowWidth = 100.dp
+
+        val colorBuenas = green
+        val colorMalas = buttonColor
+        val colorNormal = gray
+
         Spacer(modifier = Modifier.height(16.dp))
-        for (i in 1..maxScore){
-            val backgroundColor = if (i <= score) if (i > maxScore/2) green else blue else white
+        for (i in 0..maxScore/5-1){
             Box(
                 modifier = Modifier
-                    .width(125.dp)
-                    .height(9.dp)
+                    .width(lineLenght)
+                    .height(lineThick)
                     .padding(0.dp)
-                    .background(backgroundColor, shape = RoundedCornerShape(2.5.dp))
-                    .border(2.dp, backgroundColor, shape = RoundedCornerShape(5.dp))
+                    .background(
+                        if ((i*5)+1 <= score) if ((i*5)+1 > maxScore / 2) colorBuenas else colorMalas else colorNormal ,
+                        shape = RoundedCornerShape(2.5.dp)
+                    )
                     .clickable { // Add the clickable modifier here
-                        onScoreClick(i)
+                        onScoreClick(1+(5*i))
                     },
             )
-            if(i%5 == 0){
-                Spacer(modifier = Modifier.height(16.dp))
-            } else {
-                Spacer(modifier = Modifier.height(8.dp))
+            Row(
+                modifier = Modifier
+                    .width(rowWidth)
+                    .padding(0.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Box(
+                    modifier = Modifier
+                        .width(lineThick)
+                        .height(lineLenght)
+                        .padding(0.dp)
+                        .background(
+                            if ((i*5)+2 <= score) if ((i*5)+2 > maxScore / 2) colorBuenas else colorMalas else colorNormal ,
+                            shape = RoundedCornerShape(2.5.dp)
+                        )
+                        .clickable { // Add the clickable modifier here
+                            onScoreClick(2+5*i)
+                        },
+                )
+                Box(
+                    modifier = Modifier
+                        .width(lineThick)
+                        .height(diagonalLineLenght)
+                        .rotate(45f)
+                        .padding(0.dp)
+                        .background(
+                            if ((i*5)+3 <= score) if ((i*5)+3 > maxScore / 2) colorBuenas else colorMalas else colorNormal ,
+                            shape = RoundedCornerShape(2.5.dp)
+                        )
+                        .clickable { // Add the clickable modifier here
+                            onScoreClick(3+5*i)
+                        },
+                )
+                Box(
+                    modifier = Modifier
+                        .width(lineThick)
+                        .height(lineLenght)
+                        .padding(0.dp)
+                        .background(
+                            if ((i*5)+4 <= score) if ((i*5)+4 > maxScore / 2) colorBuenas else colorMalas else colorNormal,
+                            shape = RoundedCornerShape(2.5.dp)
+                        )
+                        .clickable { // Add the clickable modifier here
+                            onScoreClick(4+5*i)
+                        },
+                )
             }
+            Box(
+                modifier = Modifier
+                    .width(lineLenght)
+                    .height(lineThick)
+                    .padding(0.dp)
+                    .background(
+                        if ((i*5)+5 <= score) if ((i*5)+5 > maxScore / 2) colorBuenas else colorMalas else colorNormal ,
+                        shape = RoundedCornerShape(2.5.dp)
+                    )
+                    .clickable { // Add the clickable modifier here
+                        onScoreClick(5+5*i)
+                    },
+            )
 
+            Spacer(modifier = Modifier.height(16.dp))
         }
     }
 }

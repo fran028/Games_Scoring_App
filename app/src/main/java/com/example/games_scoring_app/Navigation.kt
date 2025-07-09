@@ -1,6 +1,7 @@
 package com.example.games_scoring_app
 
 import android.net.Uri
+import androidx.compose.ui.graphics.Color
 
 sealed class Screen(val route: String) {
     object Home : Screen("Home")
@@ -15,9 +16,11 @@ sealed class Screen(val route: String) {
         }
         //fun createRoute(gameTypeId: Int, playerNames: Array<String> ) = "Game/$gameTypeId/$playerNames"
     }
-    object SetUp : Screen("Game/{gameType}"){
-        fun createRoute(gameType: Int?) = "Game/$gameType"
+    object SetUp : Screen("SetUp/{gameType}/{gameColor}"){
+        fun createRoute(gameType: Int?, gameColor: Color) = "SetUp/$gameType/${gameColor.value.toString(16)}"
     }
     object SavedGames : Screen("SavedGames")
     object RollDice : Screen("RollDice")
+    object Settings : Screen("Settings")
+
 }

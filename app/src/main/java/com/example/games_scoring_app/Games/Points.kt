@@ -19,6 +19,7 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
@@ -27,18 +28,22 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.games_scoring_app.Theme.LeagueGothic
 import com.example.games_scoring_app.Theme.black
+import com.example.games_scoring_app.Theme.blue
 import com.example.games_scoring_app.Theme.green
+import com.example.games_scoring_app.Theme.red
 import com.example.games_scoring_app.Theme.white
+import com.example.games_scoring_app.Theme.yellow
 import kotlin.text.toIntOrNull
 
 @Composable
-fun PuntosScoreboard(players: Array<String>, maxScore: Int) {
+fun PuntosScoreboard(players: Array<String>, maxScore: Int, themeMode: Int) {
     val TAG = "PuntosScoreboard"
     Log.d(TAG, "PuntosScoreboard called")
     var emptyPlayers = false
@@ -49,12 +54,17 @@ fun PuntosScoreboard(players: Array<String>, maxScore: Int) {
             break
         }
     }
+    val backgroundColor = if (themeMode == 0) black else white
+    val fontColor = if (themeMode == 0) white else black
+    val buttonColor = if (themeMode == 0) white else black
+    val buttonFontColor = if (themeMode == 0) black else white
+
     if (emptyPlayers) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .fillMaxSize()
-                .background(black)
+                .background(backgroundColor)
                 .padding(0.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
@@ -63,7 +73,7 @@ fun PuntosScoreboard(players: Array<String>, maxScore: Int) {
                 text = "DATA ERROR",
                 fontFamily = LeagueGothic,
                 fontSize = 48.sp,
-                color = white,
+                color = fontColor,
                 modifier = Modifier
             )
         }
@@ -96,13 +106,15 @@ fun PuntosScoreboard(players: Array<String>, maxScore: Int) {
                 },
                 inputValue = inputValue,
                 onInputValueChange = { inputValue = it },
-                playername = players[selectedPlayerIndex]
+                playername = players[selectedPlayerIndex],
+                buttonColor = buttonColor,
+                buttonFontColor = buttonFontColor
             )
         }
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(black)
+                .background(backgroundColor)
                 .padding(0.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Top
@@ -125,7 +137,10 @@ fun PuntosScoreboard(players: Array<String>, maxScore: Int) {
                             onAddScoreClicked = {
                                 selectedPlayerIndex = i
                                 showPopup = true
-                            }
+                            },
+                            buttonColor = buttonColor,
+                            buttonFontColor = buttonFontColor,
+                            fontColor = fontColor
                         )
                     }
                 }
@@ -141,7 +156,10 @@ private fun PlayerPuntosColumn(
     scores: MutableState<List<Int>>, // Changed type
     maxScore: Int,
     width: Dp,
-    onAddScoreClicked: () -> Unit
+    onAddScoreClicked: () -> Unit,
+    buttonColor: Color,
+    buttonFontColor: Color,
+    fontColor: Color
 ) {
     val scoresList by scores // Observe the MutableState
     Column(
@@ -157,7 +175,7 @@ private fun PlayerPuntosColumn(
                 .width(width)
                 .height(45.dp)
                 .background(
-                    /*if (TotalScore(scoresList) >= maxScore) red else*/ white, // Use scoresList here
+                    /*if (TotalScore(scoresList) >= maxScore) red else*/ buttonColor, // Use scoresList here
                     shape = RoundedCornerShape(7.5.dp)
                 )
                 .padding(2.5.dp),
@@ -167,7 +185,7 @@ private fun PlayerPuntosColumn(
                 text = playerName,
                 fontFamily = LeagueGothic,
                 fontSize = 24.sp,
-                color = black,
+                color = buttonFontColor,
                 textAlign = TextAlign.Right,
             )
         }
@@ -177,8 +195,11 @@ private fun PlayerPuntosColumn(
                 text = score.toString(),
                 fontFamily = LeagueGothic,
                 fontSize = 36.sp,
-                color = white,
+                color = fontColor,
                 textAlign = TextAlign.Right,
+                modifier = Modifier.clickable {
+
+                }
             )
 
             Spacer(modifier = Modifier.height(6.dp))
@@ -194,7 +215,7 @@ private fun PlayerPuntosColumn(
             modifier = Modifier
                 .width(width)
                 .height(45.dp)
-                .background(white, shape = RoundedCornerShape(7.5.dp))
+                .background(buttonColor, shape = RoundedCornerShape(7.5.dp))
                 .padding(2.5.dp)
                 .clickable { onAddScoreClicked() },
             contentAlignment = Alignment.Center
@@ -203,7 +224,7 @@ private fun PlayerPuntosColumn(
                 text = "+",
                 fontFamily = LeagueGothic,
                 fontSize = 24.sp,
-                color = black,
+                color = buttonFontColor,
                 textAlign = TextAlign.Right,
             )
         }
@@ -216,26 +237,46 @@ private fun AddScorePopup(
     onConfirm: () -> Unit,
     inputValue: String,
     onInputValueChange: (String) -> Unit,
-    playername: String
+    playername: String,
+    buttonColor: Color,
+    buttonFontColor: Color
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text("Add Score to $playername") },
+        containerColor = buttonColor,
+        textContentColor = buttonFontColor,
+        titleContentColor = buttonFontColor,
         text = {
             OutlinedTextField(
                 value = inputValue,
                 onValueChange = onInputValueChange,
-                label = { Text("Enter score") }
+                label = { Text("Enter score") },
+                colors = TextFieldDefaults.colors(
+                    unfocusedContainerColor = buttonColor, // Background when not focused
+                    focusedContainerColor = buttonColor, // Background when focused
+                    focusedIndicatorColor = buttonFontColor, // Remove the underline when focused
+                    disabledContainerColor = buttonColor,
+                    focusedTextColor = buttonFontColor,
+                    unfocusedTextColor = buttonFontColor,
+                    cursorColor = buttonFontColor,
+
+                ),
+
             )
         },
         confirmButton = {
-            Button(onClick = onConfirm) {
-                Text("Add")
+            Button(onClick = onConfirm){
+                Text(
+                    text = "Add"
+                )
             }
         },
         dismissButton = {
-            Button(onClick = onDismiss) {
-                Text("Cancel")
+            Button(onClick = onDismiss){
+                Text(
+                    text = "Cancel"
+                )
             }
         }
     )

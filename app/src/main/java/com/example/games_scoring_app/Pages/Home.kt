@@ -1,5 +1,6 @@
 package com.example.games_scoring_app.Pages
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -40,11 +41,14 @@ import com.example.games_scoring_app.Components.PageTitle
 import com.example.games_scoring_app.Data.AppDatabase
 import com.example.games_scoring_app.Data.GameTypesRepository
 import com.example.games_scoring_app.Data.GamesRepository
+import com.example.games_scoring_app.Data.SettingsRepository
 import com.example.games_scoring_app.Screen
 import com.example.games_scoring_app.Theme.black
 import com.example.games_scoring_app.Theme.white
 import com.example.games_scoring_app.Theme.LeagueGothic
+import com.example.games_scoring_app.Theme.RobotoCondensed
 import com.example.games_scoring_app.Theme.blue
+import com.example.games_scoring_app.Theme.cream
 import com.example.games_scoring_app.Theme.green
 import com.example.games_scoring_app.Theme.red
 import com.example.games_scoring_app.Theme.yellow
@@ -52,6 +56,8 @@ import com.example.games_scoring_app.Viewmodel.GameTypesViewModel
 import com.example.games_scoring_app.Viewmodel.GameTypesViewModelFactory
 import com.example.games_scoring_app.Viewmodel.GamesViewModel
 import com.example.games_scoring_app.Viewmodel.GamesViewModelFactory
+import com.example.games_scoring_app.Viewmodel.SettingsViewModel
+import com.example.games_scoring_app.Viewmodel.SettingsViewModelFactory
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
 
@@ -74,6 +80,11 @@ fun HomePage(navController: NavController) {
     val gameTypesViewModelFactory = GameTypesViewModelFactory(gameTypesRepository)
     val gameTypesViewModel: GameTypesViewModel = viewModel(factory = gameTypesViewModelFactory)
 
+    val settingsRepository = SettingsRepository(database.settingsDao())
+    val settingsViewModelFactory = SettingsViewModelFactory(settingsRepository)
+    val settingsViewModel: SettingsViewModel = viewModel(factory = settingsViewModelFactory)
+
+    val themeMode by settingsViewModel.themeMode.collectAsState()
     //val lastGame by gamesViewModel.lastGame.collectAsState()
     val gameTypes by gameTypesViewModel.allGameTypes.collectAsState()
 
@@ -81,16 +92,19 @@ fun HomePage(navController: NavController) {
     LaunchedEffect(key1 = Unit) {
         //gamesViewModel.getLastGame()
         gameTypesViewModel.getAllGameTypes()
+        settingsViewModel.getThemeMode()
     }
 
-
-
+    Log.d("HomePage", "themeMode: $themeMode")
+    val backgroundColor = if (themeMode == 0) black else cream
+    val fontColor = if (themeMode == 0) white else black
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(black)
-            .verticalScroll(scrollState),
+            .background(backgroundColor)
+            .verticalScroll(scrollState)
+            .padding(0.dp),
         horizontalAlignment = Alignment.Start,
         verticalArrangement = Arrangement.Top
     ) {
@@ -132,10 +146,10 @@ fun HomePage(navController: NavController) {
         }*/
         Spacer(modifier = Modifier.height(20.dp))
         Text(
-            text = "ScoreBoards",
-            fontFamily = LeagueGothic,
-            fontSize = 48.sp,
-            color = white,
+            text = "Scoreboards",
+            fontFamily = RobotoCondensed,
+            fontSize = 36.sp,
+            color = fontColor,
             modifier = Modifier
                 .padding(horizontal = 32.dp)
                 .fillMaxWidth()
@@ -163,7 +177,7 @@ fun HomePage(navController: NavController) {
                             }
                             "Generico" -> {
                                 buttonIconId = R.drawable.paper
-                                buttonColor = white
+                                buttonColor = green
                                 textcolor = black
                             }
                             else -> {
@@ -177,7 +191,7 @@ fun HomePage(navController: NavController) {
                             bgcolor = buttonColor,
                             height = 48.dp,
                             textcolor = textcolor,
-                            onClick = { navController.navigate(Screen.SetUp.createRoute(gameType.id)) },
+                            onClick = { navController.navigate(Screen.SetUp.createRoute(gameType.id, buttonColor)) },
                             icon = buttonIconId,
                             iconSize = 32.dp,
                             doubleIcon = true

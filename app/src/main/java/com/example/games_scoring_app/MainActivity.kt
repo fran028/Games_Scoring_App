@@ -52,14 +52,17 @@ import com.example.games_scoring_app.Pages.GamePage
 import com.example.games_scoring_app.Pages.HomePage
 import com.example.games_scoring_app.Pages.RollDicePage
 import com.example.games_scoring_app.Pages.SavedGamesPage
+import com.example.games_scoring_app.Pages.SettingsPage
 import com.example.games_scoring_app.Pages.SetupPage
 import com.example.games_scoring_app.Theme.LeagueGothic
 import com.example.games_scoring_app.Theme.black
+import com.example.games_scoring_app.Theme.blue
 import com.example.games_scoring_app.Theme.white
 import com.example.games_scoring_app.ui.theme.Games_Scoring_AppTheme
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import kotlin.collections.toTypedArray
 import kotlin.text.split
+import androidx.core.graphics.toColorInt
 
 
  class MainActivity : ComponentActivity() {
@@ -178,13 +181,17 @@ fun MainScreen() {
                 composable(
                     route = Screen.SetUp.route,
                     arguments = listOf(
-                        navArgument("gameType") { type = NavType.IntType }
+                        navArgument("gameType") { type = NavType.IntType },
+                        navArgument("gameColor") { type = NavType.StringType }
                     )
                 ) { backStackEntry ->
                     val gameType = backStackEntry.arguments?.getInt("gameType") ?: 0
+                    val hex = backStackEntry.arguments?.getString("gameColor") ?: blue.value.toString(16)
+                    val color = Color(hex.toULong(16))
                     SetupPage(
                         navController = navController,
-                        gameType = gameType
+                        gameType = gameType,
+                        gameColor = color
                     )
                 }
                 composable(Screen.SavedGames.route) {
@@ -196,6 +203,9 @@ fun MainScreen() {
                     RollDicePage(
                         navController = navController,
                     )
+                }
+                composable(Screen.Settings.route) {
+                    SettingsPage(navController = navController)
                 }
             }
         }

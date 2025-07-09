@@ -28,6 +28,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -41,7 +42,7 @@ import com.example.games_scoring_app.Theme.white
 
 
 @Composable
-fun LevelsScoreboard(players: Array<String>) {
+fun LevelsScoreboard(players: Array<String>, themeMode: Int) {
     val TAG = "LevelsScoreboard"
     Log.d(TAG, "PuntosScoreboard called")
     var emptyPlayers = false
@@ -52,12 +53,18 @@ fun LevelsScoreboard(players: Array<String>) {
             break
         }
     }
+
+    val backgroundColor = if (themeMode == 0) black else white
+    val fontColor = if (themeMode == 0) white else black
+    val buttonColor = if (themeMode == 0) white else black
+    val buttonFontColor = if (themeMode == 0) black else white
+
     if (emptyPlayers) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .fillMaxSize()
-                .background(black)
+                .background(backgroundColor)
                 .padding(0.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
@@ -66,7 +73,7 @@ fun LevelsScoreboard(players: Array<String>) {
                 text = "DATA ERROR",
                 fontFamily = LeagueGothic,
                 fontSize = 48.sp,
-                color = white,
+                color = fontColor,
                 modifier = Modifier
             )
         }
@@ -79,10 +86,12 @@ fun LevelsScoreboard(players: Array<String>) {
         Log.d(TAG, "maxwidth: $maxwidth")
         val width = if (maxwidth < minwidth) minwidth else maxwidth
 
+
+
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(black)
+                .background(backgroundColor)
                 .padding(0.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Top
@@ -108,7 +117,9 @@ fun LevelsScoreboard(players: Array<String>) {
                             if (playerLevels[index] > 0) { // Assuming level cannot go below 0
                                 playerLevels[index] = playerLevels[index] - 1
                             }
-                        }
+                        },
+                        buttonColor = buttonColor,
+                        buttonFontColor = buttonFontColor
                     )
                 }
             }
@@ -123,6 +134,8 @@ private fun PlayerLevelColumn(
     currentLevel: Int,
     onLevelUp: () -> Unit,
     onLevelDown: () -> Unit,
+    buttonColor: Color,
+    buttonFontColor: Color
 ) {
     Column(
         modifier = Modifier
@@ -181,7 +194,7 @@ private fun PlayerLevelColumn(
                     .width(width)
                     .height(45.dp)
                     .background(
-                        /*if (TotalScore(scoresList) >= maxScore) red else*/ white, // Use scoresList here
+                        /*if (TotalScore(scoresList) >= maxScore) red else*/ buttonColor, // Use scoresList here
                         shape = RoundedCornerShape(7.5.dp)
                     )
                     .padding(2.5.dp),
@@ -191,7 +204,7 @@ private fun PlayerLevelColumn(
                     text = "",
                     fontFamily = LeagueGothic,
                     fontSize = 24.sp,
-                    color = black,
+                    color = buttonFontColor,
                     textAlign = TextAlign.Right,
                 )
             }

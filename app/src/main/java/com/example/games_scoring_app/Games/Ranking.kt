@@ -27,6 +27,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -43,7 +44,7 @@ import com.example.games_scoring_app.Theme.yellow
 
 
 @Composable
-fun RankingScoreboard(players: Array<String>) {
+fun RankingScoreboard(players: Array<String>, themeMode: Int) {
     val TAG = "RankingScoreboard"
     Log.d(TAG, "PuntosScoreboard called")
     var emptyPlayers = false
@@ -54,12 +55,18 @@ fun RankingScoreboard(players: Array<String>) {
             break
         }
     }
+
+    val backgroundColor = if (themeMode == 0) black else white
+    val fontColor = if (themeMode == 0) white else black
+    val buttonColor = if (themeMode == 0) white else black
+    val buttonFontColor = if (themeMode == 0) black else white
+
     if (emptyPlayers) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .fillMaxSize()
-                .background(black)
+                .background(backgroundColor)
                 .padding(0.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
@@ -68,7 +75,7 @@ fun RankingScoreboard(players: Array<String>) {
                 text = "DATA ERROR",
                 fontFamily = LeagueGothic,
                 fontSize = 48.sp,
-                color = white,
+                color = fontColor,
                 modifier = Modifier
             )
         }
@@ -92,7 +99,7 @@ fun RankingScoreboard(players: Array<String>) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(black)
+                .background(backgroundColor)
                 .padding(0.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Top
@@ -107,10 +114,10 @@ fun RankingScoreboard(players: Array<String>) {
                 ) {
                     Text(
                         modifier = Modifier.padding(0.dp).fillMaxWidth(),
-                        text = "Player List",
+                        text = "Select from Player List",
                         fontFamily = LeagueGothic,
                         fontSize = 32.sp,
-                        color = white,
+                        color = fontColor,
                         textAlign = TextAlign.Left,
                     )
                     Spacer(modifier = Modifier.height(8.dp))
@@ -129,17 +136,19 @@ fun RankingScoreboard(players: Array<String>) {
                                 isSelected = selectedPlayerIndex == index,
                                 onPlayerClicked = { clickedPlayerIndex ->
                                     selectedPlayerIndex = clickedPlayerIndex
-                                }
+                                },
+                                buttonColor = buttonColor,
+                                buttonFontColor = buttonFontColor
                             )
                         }
                     }
                     Spacer(modifier = Modifier.height(16.dp))
                     Text(
                         modifier = Modifier.padding(0.dp).fillMaxWidth(),
-                        text = "Player Ranking",
+                        text = "Players Ranking",
                         fontFamily = LeagueGothic,
                         fontSize = 32.sp,
-                        color = white,
+                        color = fontColor,
                         textAlign = TextAlign.Left,
                     )
                     val prefixList = listOf("st","nd","rd","th")
@@ -174,14 +183,14 @@ fun RankingScoreboard(players: Array<String>) {
                                 modifier = Modifier
                                     .width(46.dp)
                                     .height(45.dp)
-                                    .background(black),
+                                    .background(backgroundColor),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Text(
                                     text = rankText,
                                     fontFamily = LeagueGothic,
                                     fontSize = 36.sp,
-                                    color = white,
+                                    color = fontColor,
                                     textAlign = TextAlign.Center,
                                 )
                             }
@@ -195,8 +204,8 @@ fun RankingScoreboard(players: Array<String>) {
                                             1 -> yellow
                                             2 -> silver
                                             3 -> copper
-                                            8 -> red
-                                            else -> white
+                                            numberOfRankingSlots -> red
+                                            else -> buttonColor
                                         },
                                         shape = RoundedCornerShape(7.5.dp)
                                     )
@@ -207,7 +216,7 @@ fun RankingScoreboard(players: Array<String>) {
                                     text = displayPlayerName.uppercase(), // Display assigned player's name or placeholder
                                     fontFamily = LeagueGothic,
                                     fontSize = 24.sp,
-                                    color = black,
+                                    color = if (currentRank != 1 && currentRank != 2 && currentRank != 3 && currentRank != numberOfRankingSlots ) buttonFontColor else black,
                                     textAlign = TextAlign.Center, // Keep center for the text within this box
                                     maxLines = 1,
                                     overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis // Handle long names
@@ -228,7 +237,10 @@ private fun PlayerRankingColumn(
     columnWidth: Dp,
     playerIndex: Int,
     isSelected: Boolean, // New parameter: whether this specific player button is the selected one
-    onPlayerClicked: (Int) -> Unit // New callback: reports WHICH player index was clicked
+    onPlayerClicked: (Int) -> Unit, // New callback: reports WHICH player index was clicked
+    buttonColor: Color,
+    buttonFontColor: Color
+
 ) {
      // Observe the MutableState
     Box(
@@ -236,7 +248,7 @@ private fun PlayerRankingColumn(
             .width(columnWidth)
             .height(45.dp)
             .background(
-                if (isSelected) blue else white,
+                if (isSelected) blue else buttonColor,
                 shape = RoundedCornerShape(7.5.dp)
             )
             .padding(2.5.dp)
@@ -249,7 +261,7 @@ private fun PlayerRankingColumn(
             text = playerName,
             fontFamily = LeagueGothic,
             fontSize = 24.sp,
-            color = black,
+            color = if (isSelected) black else buttonFontColor,
             textAlign = TextAlign.Center,
         )
     }

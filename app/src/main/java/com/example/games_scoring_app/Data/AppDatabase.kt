@@ -14,8 +14,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 @Database(
-    entities = [Players::class, Games::class, Scores::class, GameTypes::class],
-    version = 2,
+    entities = [Players::class, Games::class, Scores::class, GameTypes::class, Settings::class],
+    version = 3,
     exportSchema = true,
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -23,6 +23,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun gamesDao(): GamesDao
     abstract fun scoresDao(): ScoresDao
     abstract fun gameTypesDao(): GameTypesDao
+    abstract fun settingsDao(): SettingsDao
 
     companion object {
         @Volatile
@@ -77,7 +78,7 @@ abstract class AppDatabase : RoomDatabase() {
                 val database = INSTANCE ?: AppDatabase.getDatabase(appContext, scope)
                 stopSignalDatabaseOperational()
                 Log.d("AppDatabase", "Pre-populating database...")
-                populateDatabase(database.gameTypesDao())
+                populateDatabase(database.gameTypesDao(), database.settingsDao())
                 Log.d("AppDatabase", "Database pre-populated.")
                 signalDatabaseOperational()
             }
@@ -85,9 +86,29 @@ abstract class AppDatabase : RoomDatabase() {
         }
 
 
-        suspend fun populateDatabase(gameTypesDao: GameTypesDao) {
+        suspend fun populateDatabase(gameTypesDao: GameTypesDao, settingsDao: SettingsDao) {
 
             gameTypesDao.deleteGamesType()
+
+            val settings = settingsDao.getSettings()
+
+            if (settings.isEmpty()) {
+                settingsDao.insertSettings(Settings(name = "theme", value = 0))
+            } else {
+                var themeModeLoaded = false
+                for (setting in settings) {
+                    if (setting.name == "theme") {
+                        themeModeLoaded = true
+                        break
+                    }
+                }
+
+                if (!themeModeLoaded) {
+                    settingsDao.insertSettings(Settings(name = "theme", value = 0))
+                }
+            }
+
+
 
             // Add your initial data here using your DAO
             Log.d("AppDatabase", "Adding initial data to database...")

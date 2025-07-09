@@ -53,6 +53,7 @@ import com.example.games_scoring_app.Data.GameTypesRepository
 import com.example.games_scoring_app.Data.GamesRepository
 import com.example.games_scoring_app.Data.Players
 import com.example.games_scoring_app.Data.PlayersRepository
+import com.example.games_scoring_app.Data.SettingsRepository
 import com.example.games_scoring_app.R
 import com.example.games_scoring_app.Screen
 import com.example.games_scoring_app.Theme.LeagueGothic
@@ -68,6 +69,8 @@ import com.example.games_scoring_app.Viewmodel.GamesViewModel
 import com.example.games_scoring_app.Viewmodel.GamesViewModelFactory
 import com.example.games_scoring_app.Viewmodel.PlayersViewModel
 import com.example.games_scoring_app.Viewmodel.PlayersViewModelFactory
+import com.example.games_scoring_app.Viewmodel.SettingsViewModel
+import com.example.games_scoring_app.Viewmodel.SettingsViewModelFactory
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
@@ -75,7 +78,7 @@ import kotlin.collections.sliceArray
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun SetupPage(navController: NavController, gameType: Int) {
+fun SetupPage(navController: NavController, gameType: Int, gameColor: Color) {
     val TAG  = "SetupPage"
     Log.d(TAG, "SetupPage called")
     Log.d(TAG, "match_type: $gameType")
@@ -100,8 +103,13 @@ fun SetupPage(navController: NavController, gameType: Int) {
     val playersViewModelFactory = PlayersViewModelFactory(playersRepository)
     val playersViewModel: PlayersViewModel = viewModel(factory = playersViewModelFactory)*/
 
+    val settingsRepository = SettingsRepository(database.settingsDao())
+    val settingsViewModelFactory = SettingsViewModelFactory(settingsRepository)
+    val settingsViewModel: SettingsViewModel = viewModel(factory = settingsViewModelFactory)
+
     Log.d(TAG, "Viemodels setup finish")
 
+    val themeMode by settingsViewModel.themeMode.collectAsState()
     val gameTypes by gameTypesViewModel.allGameTypes.collectAsState()
     //val lastGame by gamesViewModel.lastGame.collectAsState()
     //val emptyGame = gamesViewModel.emptyGame()
@@ -118,6 +126,7 @@ fun SetupPage(navController: NavController, gameType: Int) {
     LaunchedEffect(key1 = Unit) {
         Log.d(TAG, "First LaunchedEffect called")
         gameTypesViewModel.getAllGameTypes()
+        settingsViewModel.getThemeMode()
     }
 
     LaunchedEffect(key1 = gameTypes) {
@@ -141,10 +150,15 @@ fun SetupPage(navController: NavController, gameType: Int) {
 
     val allowedChars = remember { ('a'..'z') + ('A'..'Z') + ('0'..'9') } // Define allowed characters
 
+    val backgroundColor = if (themeMode == 0) black else white
+    val fontColor = if (themeMode == 0) white else black
+    val buttonColor = if (themeMode == 0) white else black
+    val buttonFontColor = if (themeMode == 0) black else white
+
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(black)
+            .background(backgroundColor)
             .verticalScroll(scrollState),
         horizontalAlignment = Alignment.Start,
         verticalArrangement = Arrangement.Top
@@ -152,37 +166,27 @@ fun SetupPage(navController: NavController, gameType: Int) {
         if(showSetup.value) {
             PageTitle("GAME SETUP", R.drawable.games_retro, navController)
             Spacer(modifier = Modifier.height(28.dp))
-            var buttonColor = yellow
-            var textcolor = black
             var buttonIconId = 0
             when (thisGameType.value.type) {
                 "Dados" -> {
                     buttonIconId = R.drawable.dices
-                    buttonColor = blue
-                    textcolor = black
                 }
                 "Cartas" -> {
                     buttonIconId = R.drawable.card
-                    buttonColor = yellow
-                    textcolor = black
                 }
                 "Generico" -> {
                     buttonIconId = R.drawable.paper
-                    buttonColor = white
-                    textcolor = black
                 }
                 else -> {
                     buttonIconId = R.drawable.paper
-                    buttonColor = white
-                    textcolor = black
                 }
             }
             Column (Modifier.padding(horizontal = 30.dp )) {
                 IconButtonBar(
                     text = thisGameType.value.name.uppercase(),
-                    bgcolor = buttonColor,
+                    bgcolor = gameColor,
                     height = 48.dp,
-                    textcolor = textcolor,
+                    textcolor = black,
                     onClick = { },
                     icon = buttonIconId,
                     iconSize = 32.dp,
@@ -196,7 +200,7 @@ fun SetupPage(navController: NavController, gameType: Int) {
                     text = "Player Amount",
                     fontFamily = LeagueGothic,
                     fontSize = 48.sp,
-                    color = white,
+                    color = fontColor,
                     modifier = Modifier
                         .padding(horizontal = 32.dp)
                         .fillMaxWidth()
@@ -213,8 +217,9 @@ fun SetupPage(navController: NavController, gameType: Int) {
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(0.dp),
-                    selectedbgcolor = blue,
-                    bgcolor = white
+                    selectedbgcolor = gameColor,
+                    bgcolor = buttonColor,
+                    textcolor = buttonFontColor,
                 )
             }
 
@@ -224,7 +229,7 @@ fun SetupPage(navController: NavController, gameType: Int) {
                     text = if(thisGameType.value.name == "Truco") "Team Names" else "Player Names",
                     fontFamily = LeagueGothic,
                     fontSize = 48.sp,
-                    color = white,
+                    color = fontColor,
                     modifier = Modifier
                         .fillMaxWidth()
                         .align(Alignment.CenterHorizontally)
@@ -233,9 +238,9 @@ fun SetupPage(navController: NavController, gameType: Int) {
                 )
                 for (i in 0..maxPlayers-1) {
                     val isSelected = i < selectedPlayerCount
-                    var inputcolor = white
+                    var inputcolor = buttonColor
                     if (isSelected && thisGameType.value.name != "Truco"){
-                        inputcolor = blue
+                        inputcolor = gameColor
                     }
 
                     TextField(
@@ -248,7 +253,7 @@ fun SetupPage(navController: NavController, gameType: Int) {
                             Text(
                                 text = "Player Name",
                                 style = TextStyle(
-                                    color = black,
+                                    color = buttonFontColor,
                                     fontSize = 32.sp,
                                     fontFamily = LeagueGothic
                                 )
@@ -262,15 +267,15 @@ fun SetupPage(navController: NavController, gameType: Int) {
                         textStyle = TextStyle(
                             fontFamily = LeagueGothic,
                             fontSize = 32.sp,
-                            color = black
+                            color = buttonFontColor
                         ),
                         singleLine = true,
                         colors = TextFieldDefaults.colors(
                             unfocusedContainerColor = inputcolor, // Background when not focused
                             focusedContainerColor = inputcolor, // Background when focused
                             unfocusedIndicatorColor = Color.Transparent, // Remove the underline when not focused
-                            focusedIndicatorColor = black, // Remove the underline when focused
-                            disabledContainerColor = white,
+                            focusedIndicatorColor = buttonFontColor, // Remove the underline when focused
+                            disabledContainerColor = fontColor,
                             disabledIndicatorColor = Color.Transparent,
                             disabledTextColor = Color.Transparent,
                             disabledLabelColor = Color.Transparent,
@@ -324,7 +329,7 @@ fun SetupPage(navController: NavController, gameType: Int) {
                 Spacer(modifier = Modifier.height(40.dp))
             }
         } else {
-            LoadingMessage("LOADING")
+            LoadingMessage("LOADING", themeMode, gameColor)
         }
     }
 }

@@ -25,10 +25,19 @@ import androidx.compose.ui.unit.sp
 import com.example.games_scoring_app.R
 import com.example.games_scoring_app.Screen
 import com.example.games_scoring_app.Theme.LeagueGothic
+import com.example.games_scoring_app.Theme.black
+import com.example.games_scoring_app.Theme.blue
 import com.example.games_scoring_app.Theme.white
 
 @Composable
-fun LoadingMessage(text: String = "LOADING") {
+fun LoadingMessage(text: String = "LOADING", themeMode: Int, wheelColor: Color = blue) {
+
+    val backgroundColor = if (themeMode == 0) black else white
+    val fontColor = if (themeMode == 0) white else black
+    val buttonColor = if (themeMode == 0) white else black
+    val buttonFontColor = if (themeMode == 0) black else white
+    val image = if (themeMode == 0) R.drawable.logobig else R.drawable.logobig_negro
+
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
@@ -36,7 +45,7 @@ fun LoadingMessage(text: String = "LOADING") {
     ) {
         Spacer(modifier = Modifier.height(200.dp))
         Image(
-            painter = painterResource(id = R.drawable.logobig),
+            painter = painterResource(id = image),
             contentDescription = "App Image",
             modifier = Modifier.size(100.dp)
         )
@@ -46,10 +55,10 @@ fun LoadingMessage(text: String = "LOADING") {
             style = TextStyle(
                 fontFamily = LeagueGothic,
                 fontSize = 60.sp,
-                color = white
+                color = fontColor
             ),
             textAlign = TextAlign.Center
         )
-        CircularProgressIndicator(color = white)
+        CircularProgressIndicator(color = wheelColor)
     }
 }

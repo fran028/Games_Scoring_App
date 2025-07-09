@@ -49,6 +49,7 @@ fun PlayerAmountGrid(
     onPlayerAmountSelected: (Int) -> Unit,
     modifier: Modifier = Modifier,
     bgcolor: Color = white,
+    textcolor: Color = black,
     selectedbgcolor: Color = blue,
 ) {
 
@@ -84,7 +85,7 @@ fun PlayerAmountGrid(
                     shape = RoundedCornerShape(5.dp),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = if (i <= selectedAmount) selectedbgcolor else bgcolor,
-                        contentColor = Color.Black
+                        contentColor = textcolor
                     ),
                     contentPadding = PaddingValues(0.dp)
                 ) {
@@ -96,7 +97,7 @@ fun PlayerAmountGrid(
                             text = i.toString(),
                             style = TextStyle(
                                 fontFamily = LeagueGothic,
-                                color = black,
+                                color = textcolor,
                                 fontSize = 48.sp, // Adjust as needed
                                 textAlign = TextAlign.Center, // Ensure text is centered horizontally
                             ),
