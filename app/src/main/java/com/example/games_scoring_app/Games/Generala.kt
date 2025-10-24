@@ -1,9 +1,7 @@
 package com.example.games_scoring_app.Games
 
-
 import android.util.Log
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -18,91 +16,52 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.games_scoring_app.Data.Players
+import com.example.games_scoring_app.Data.PlayerWithScores
+import com.example.games_scoring_app.Data.ScoreTypes
 import com.example.games_scoring_app.Data.Scores
 import com.example.games_scoring_app.Theme.LeagueGothic
 import com.example.games_scoring_app.Theme.black
 import com.example.games_scoring_app.Theme.blue
-import com.example.games_scoring_app.Theme.white
-import androidx.compose.runtime.snapshots.SnapshotStateList
 import com.example.games_scoring_app.Theme.gray
-import com.example.games_scoring_app.Theme.green
-import com.example.games_scoring_app.Theme.red
+import com.example.games_scoring_app.Theme.white
 import com.example.games_scoring_app.Theme.yellow
-import java.util.Collections
 
 @Composable
-fun rememberPlayerListStates(numberOfPlayers: Int, valoresGenerala: List<List<String>>): List<SnapshotStateList<Int>> {
-    val numLists = valoresGenerala.size
+fun GeneralaScoreboard(
+    playersWithScores: List<PlayerWithScores>,
+    scoreTypes: List<ScoreTypes>,
+    themeMode: Int,
+    onAddScore: (Scores) -> Unit,
+    onUpdateScore: (Scores) -> Unit
+) {
+    val TAG = "GeneralaScoreboard"
 
-    return remember {
-        List(numberOfPlayers) {
-            SnapshotStateList<Int>().apply { addAll(List(numLists) { 0 }) } // Initialize each list's state to 1 (the second element)
-        }
-    }
-}
+    // These are the UI labels for the rows, which should match the order from the database
+    val opcionesGenerala = scoreTypes.map { it.name }
 
-fun calculateTotals(playerListStates: List<SnapshotStateList<Int>>, valoresGenerala: List<List<String>>): List<Int> {
-    return playerListStates.map { playerSelections ->
-        playerSelections.foldIndexed(0) { index, acc, selectionIndex ->
-            val scoreValueStr = valoresGenerala[index].getOrElse(selectionIndex) { "0" }
-            val scoreValue = when (scoreValueStr) {
-                "-", "x" -> 0 // Treat "-" and "x" as 0
-                else -> scoreValueStr.toIntOrNull() ?: 0 // Convert other strings to Int, or 0 if not a number
-            }
-            acc + scoreValue
-        }
-    }
-}
-@Composable
-fun GeneralaScoreboard(players: Array<String>, themeMode: Int) {
-    val TAG = "Generala"
-
-    val opcionesGenerala = listOf("1", "2", "3", "4", "5", "6", "Escalera", "Full", "Poker", "Generala", "Generala x2")
-
+    // This local data defines the sequence of possible scores for each category
     val valoresGenerala: List<List<String>> = listOf(
-        listOf("-", "1", "2", "3", "4", "5","x"),
+        listOf("-", "1", "2", "3", "4", "5", "x"),
         listOf("-", "2", "4", "6", "8", "12", "x"),
         listOf("-", "3", "6", "9", "12", "15", "x"),
         listOf("-", "4", "8", "12", "16", "20", "x"),
         listOf("-", "5", "10", "15", "20", "25", "x"),
         listOf("-", "6", "12", "18", "24", "30", "x"),
-        listOf( "-", "20", "25", "x"),
+        listOf("-", "20", "25", "x"),
         listOf("-", "30", "35", "x"),
         listOf("-", "40", "45", "x"),
         listOf("-", "50", "55", "x"),
         listOf("-", "100", "105", "x")
     )
-   // Log.d(TAG, "valoresGenerala: $valoresGenerala")
 
-
-    var scoreChanges by remember { mutableStateOf(0) }
-    val playerListStates = rememberPlayerListStates(players.size, valoresGenerala)
-
-    val playerTotals = remember(playerListStates, scoreChanges) {
-        calculateTotals(playerListStates, valoresGenerala)
-    }
-
-    fun cycleToNextOption(playerIndex: Int, listIndex: Int) {
-        Log.d(TAG, "cycleToNextOption called")
-        val current = playerListStates[playerIndex][listIndex]
-        Log.d(TAG, "current: $current")
-        val numOptions = valoresGenerala[listIndex].size
-        Log.d(TAG, "numOptions: $numOptions")
-        val next = (current % numOptions) + 1
-        Log.d(TAG, "next: $next")
-        playerListStates[playerIndex][listIndex] = next
-        scoreChanges++
-        Log.d(TAG, "scoreChanges: $scoreChanges")
+    // Calculate total scores directly from the playerWithScores object
+    val playerTotals = playersWithScores.map { player ->
+        player.scores.sumOf { it.score }
     }
 
     val backgroundColor = if (themeMode == 0) black else white
@@ -125,6 +84,7 @@ fun GeneralaScoreboard(players: Array<String>, themeMode: Int) {
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.Top
         ) {
+            // Column for Score Type Labels (PLAYERS, 1, 2, 3...)
             Column(
                 modifier = Modifier
                     .fillMaxHeight()
@@ -137,7 +97,7 @@ fun GeneralaScoreboard(players: Array<String>, themeMode: Int) {
                         .width(90.dp)
                         .height(45.dp)
                         .background(buttonColor, shape = RoundedCornerShape(7.5.dp))
-                        .padding(2.5.dp) ,
+                        .padding(2.5.dp),
                     contentAlignment = Alignment.CenterEnd
                 ) {
                     Text(
@@ -150,11 +110,9 @@ fun GeneralaScoreboard(players: Array<String>, themeMode: Int) {
                     )
                 }
                 Spacer(modifier = Modifier.height(6.dp))
+                // Create a row label for each score type
                 for (valor in opcionesGenerala) {
-                    var fontSize = 32.sp
-                    if (valor == "Escalera" || valor == "Full" || valor == "Poker" || valor == "Generala" || valor == "Generala x2") {
-                        fontSize = 24.sp
-                    }
+                    val fontSize = if (valor.length > 6) 24.sp else 32.sp
                     Box(
                         modifier = Modifier
                             .width(90.dp)
@@ -174,12 +132,13 @@ fun GeneralaScoreboard(players: Array<String>, themeMode: Int) {
                     }
                     Spacer(modifier = Modifier.height(6.dp))
                 }
+                // TOTAL row label
                 Box(
                     modifier = Modifier
                         .width(90.dp)
                         .height(45.dp)
                         .background(buttonColor, shape = RoundedCornerShape(7.5.dp))
-                        .padding(2.5.dp) ,
+                        .padding(2.5.dp),
                     contentAlignment = Alignment.CenterEnd
                 ) {
                     Text(
@@ -193,6 +152,8 @@ fun GeneralaScoreboard(players: Array<String>, themeMode: Int) {
                 }
             }
             Spacer(modifier = Modifier.width(10.dp))
+
+            // Columns for each player's scores
             Column(
                 modifier = Modifier
                     .fillMaxHeight()
@@ -207,13 +168,14 @@ fun GeneralaScoreboard(players: Array<String>, themeMode: Int) {
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.Top
                 ) {
+                    playersWithScores.forEachIndexed { playerIndex, playerWithScores ->
+                        val player = playerWithScores.player
+                        val minWidth = 30.dp
+                        val maxWidth = (272 / playersWithScores.size - 4.5 * playersWithScores.size).dp
+                        val width = if (maxWidth < minWidth) minWidth else maxWidth
+                        val playerName = if (playersWithScores.size > 2) player.name.take(2) else player.name
 
-                    for (i in 0..players.size - 1) {
-                        val minwidth = 30.dp
-                        val maxwidth = (272 / players.size - 4.5 * players.size).dp
-                        val width = if (maxwidth < minwidth) minwidth else maxwidth
-
-                        val playerName = if(players.size > 2) players[i].substring(0,2) else players[i]
+                        // A column for each player
                         Column(
                             modifier = Modifier
                                 .fillMaxHeight()
@@ -221,12 +183,13 @@ fun GeneralaScoreboard(players: Array<String>, themeMode: Int) {
                             verticalArrangement = Arrangement.Top,
                             horizontalAlignment = Alignment.CenterHorizontally,
                         ) {
+                            // Player Name Box
                             Box(
                                 modifier = Modifier
                                     .width(width)
                                     .height(45.dp)
                                     .background(blue, shape = RoundedCornerShape(7.5.dp))
-                                    .padding(2.5.dp) ,
+                                    .padding(2.5.dp),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Text(
@@ -234,60 +197,99 @@ fun GeneralaScoreboard(players: Array<String>, themeMode: Int) {
                                     fontFamily = LeagueGothic,
                                     fontSize = 24.sp,
                                     color = black,
-                                    textAlign = TextAlign.Right,
+                                    textAlign = TextAlign.Center,
                                 )
                             }
                             Spacer(modifier = Modifier.height(6.dp))
-                            for (j in valoresGenerala.indices) {
-                                val currentOptionIndex = playerListStates[i][j]
-                                val currentValue = valoresGenerala[j].getOrElse(currentOptionIndex) { "-" }
-                                val boxBackgroundColor = when {
-                                    currentValue == "x" -> backgroundColor // Your desired black color
-                                    currentValue == "-" -> gray // Your desired gray color
-                                    j >= 6 && currentOptionIndex == 2 -> yellow // Define 'yellow' in your Theme or use Color.Yellow
-                                    else -> buttonColor // Your default white color
+
+                            // Score cells for this player
+                            scoreTypes.forEachIndexed { scoreTypeIndex, scoreType ->
+                                // Find the existing score from the database for this player and this category
+                                val existingScore = playerWithScores.scores.find { it.id_score_type == scoreType.id }
+                                val currentScoreValue = existingScore?.score ?: 0
+                                val scoreOptions = valoresGenerala.getOrElse(scoreTypeIndex) { listOf("-", "0", "x") }
+
+                                // Find the index of the current score in the options list to cycle through it
+                                val currentOptionIndex = scoreOptions.indexOf(currentScoreValue.toString()).coerceAtLeast(0)
+
+                                val displayedValue = if (existingScore == null) "-" else {
+                                    if(existingScore.score == -1) "x" else existingScore.score.toString()
                                 }
 
-                                // Determine text color for readability, especially if background is black
-                                val textColor =  when {
-                                    currentValue == "x" -> fontColor // Your desired black color
-                                    currentValue == "-" -> white // Your desired gray color
-                                    j >= 6 && currentOptionIndex == 2 -> black // Define 'yellow' in your Theme or use Color.Yellow
-                                    else -> buttonFontColor // Your default white color
+                                val boxBackgroundColor = when {
+                                    displayedValue == "x" -> backgroundColor
+                                    displayedValue == "-" -> gray
+                                    scoreTypeIndex >= 6 && currentScoreValue == scoreOptions.getOrNull(2)?.toIntOrNull() -> yellow
+                                    else -> buttonColor
                                 }
-                                 Box(
+                                val textColor = when {
+                                    displayedValue == "x" -> fontColor
+                                    displayedValue == "-" -> white
+                                    scoreTypeIndex >= 6 && currentScoreValue == scoreOptions.getOrNull(2)?.toIntOrNull() -> black
+                                    else -> buttonFontColor
+                                }
+
+                                Box(
                                     modifier = Modifier
                                         .width(width)
                                         .height(45.dp)
                                         .background(boxBackgroundColor, shape = RoundedCornerShape(7.5.dp))
                                         .padding(0.dp)
-                                        .clickable { cycleToNextOption(i, j) },
+                                        .clickable {
+                                            // --- DATABASE LOGIC ---
+                                            val nextOptionIndex = (currentOptionIndex + 1) % scoreOptions.size
+                                            val nextValueStr = scoreOptions[nextOptionIndex]
+                                            val nextScoreInt = when (nextValueStr) {
+                                                "x" -> -1 // Use -1 to represent 'x' in the database
+                                                "-" -> 0
+                                                else -> nextValueStr.toIntOrNull() ?: 0
+                                            }
+
+                                            if (existingScore != null) {
+                                                // Score exists, update it
+                                                val updatedScore = existingScore.copy(score = nextScoreInt)
+                                                onUpdateScore(updatedScore)
+                                                Log.d(TAG, "Updating score for ${player.name}, ${scoreType.name}: $nextScoreInt")
+                                            } else {
+                                                // No score exists, create a new one
+                                                val newScore = Scores(
+                                                    id_player = player.id,
+                                                    id_score_type = scoreType.id,
+                                                    score = nextScoreInt,
+                                                    isFinalScore = false // Or determine this based on game rules
+                                                )
+                                                onAddScore(newScore)
+                                                Log.d(TAG, "Adding score for ${player.name}, ${scoreType.name}: $nextScoreInt")
+                                            }
+                                        },
                                     contentAlignment = Alignment.Center
                                 ) {
                                     Text(
-                                        text = valoresGenerala[j].getOrElse(currentOptionIndex, { "-" }),
+                                        text = displayedValue,
                                         fontFamily = LeagueGothic,
                                         fontSize = 24.sp,
                                         color = textColor,
-                                        textAlign = TextAlign.Right,
+                                        textAlign = TextAlign.Center,
                                     )
                                 }
                                 Spacer(modifier = Modifier.height(6.dp))
                             }
+
+                            // Total Box
                             Box(
                                 modifier = Modifier
                                     .width(width)
                                     .height(45.dp)
                                     .background(buttonColor, shape = RoundedCornerShape(7.5.dp))
-                                    .padding(2.5.dp) ,
+                                    .padding(2.5.dp),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Text(
-                                    text = playerTotals[i].toString(),
+                                    text = playerTotals.getOrElse(playerIndex) { 0 }.toString(),
                                     fontFamily = LeagueGothic,
                                     fontSize = 24.sp,
                                     color = buttonFontColor,
-                                    textAlign = TextAlign.Right,
+                                    textAlign = TextAlign.Center,
                                 )
                             }
                         }
@@ -296,8 +298,6 @@ fun GeneralaScoreboard(players: Array<String>, themeMode: Int) {
                 }
             }
         }
-
     }
     Spacer(modifier = Modifier.height(40.dp))
-
 }

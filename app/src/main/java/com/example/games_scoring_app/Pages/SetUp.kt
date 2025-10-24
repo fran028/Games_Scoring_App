@@ -1,19 +1,18 @@
 package com.example.games_scoring_app.Pages
 
-import android.content.ContentValues.TAG
 import android.os.Build
 import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
@@ -33,7 +32,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.isEmpty
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
@@ -46,35 +44,39 @@ import androidx.navigation.NavController
 import com.example.games_scoring_app.Components.ButtonBar
 import com.example.games_scoring_app.Components.IconButtonBar
 import com.example.games_scoring_app.Components.LoadingMessage
-import com.example.games_scoring_app.Components.PageTitle
 import com.example.games_scoring_app.Components.PlayerAmountGrid
+import com.example.games_scoring_app.Components.WidgetTitle
 import com.example.games_scoring_app.Data.AppDatabase
 import com.example.games_scoring_app.Data.GameTypesRepository
+import com.example.games_scoring_app.Data.Games
 import com.example.games_scoring_app.Data.GamesRepository
 import com.example.games_scoring_app.Data.Players
 import com.example.games_scoring_app.Data.PlayersRepository
+import com.example.games_scoring_app.Data.ScoreTypesRepository
+import com.example.games_scoring_app.Data.Scores
+import com.example.games_scoring_app.Data.ScoresRepository
 import com.example.games_scoring_app.Data.SettingsRepository
 import com.example.games_scoring_app.R
 import com.example.games_scoring_app.Screen
 import com.example.games_scoring_app.Theme.LeagueGothic
-import com.example.games_scoring_app.Theme.RobotoCondensed
 import com.example.games_scoring_app.Theme.black
-import com.example.games_scoring_app.Theme.blue
 import com.example.games_scoring_app.Theme.green
 import com.example.games_scoring_app.Theme.white
-import com.example.games_scoring_app.Theme.yellow
 import com.example.games_scoring_app.Viewmodel.GameTypesViewModel
 import com.example.games_scoring_app.Viewmodel.GameTypesViewModelFactory
 import com.example.games_scoring_app.Viewmodel.GamesViewModel
 import com.example.games_scoring_app.Viewmodel.GamesViewModelFactory
 import com.example.games_scoring_app.Viewmodel.PlayersViewModel
 import com.example.games_scoring_app.Viewmodel.PlayersViewModelFactory
+import com.example.games_scoring_app.Viewmodel.ScoreTypesViewModel
+import com.example.games_scoring_app.Viewmodel.ScoreTypesViewModelFactory
+import com.example.games_scoring_app.Viewmodel.ScoresViewModel
+import com.example.games_scoring_app.Viewmodel.ScoresViewModelFactory
 import com.example.games_scoring_app.Viewmodel.SettingsViewModel
 import com.example.games_scoring_app.Viewmodel.SettingsViewModelFactory
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
-import kotlin.collections.sliceArray
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
@@ -91,28 +93,32 @@ fun SetupPage(navController: NavController, gameType: Int, gameColor: Color) {
 
     val coroutineScope = rememberCoroutineScope()
 
-    /*val gamesRepository = GamesRepository(database.gamesDao())
-    val gamesViewModelFactory = GamesViewModelFactory(gamesRepository)
-    val gamesViewModel: GamesViewModel = viewModel(factory = gamesViewModelFactory)*/
+    // --- ViewModel Setup ---
+    val gamesRepository = GamesRepository(database.gamesDao())
+    val gamesViewModel: GamesViewModel = viewModel(factory = GamesViewModelFactory(gamesRepository))
 
     val gameTypesRepository = GameTypesRepository(database.gameTypesDao())
-    val gameTypesViewModelFactory = GameTypesViewModelFactory(gameTypesRepository)
-    val gameTypesViewModel: GameTypesViewModel = viewModel(factory = gameTypesViewModelFactory)
+    val gameTypesViewModel: GameTypesViewModel = viewModel(factory = GameTypesViewModelFactory(gameTypesRepository))
 
-    /*val playersRepository = PlayersRepository(database.playersDao())
-    val playersViewModelFactory = PlayersViewModelFactory(playersRepository)
-    val playersViewModel: PlayersViewModel = viewModel(factory = playersViewModelFactory)*/
+    val scoreTypesRepository = ScoreTypesRepository(database.scoreTypesDao())
+    val scoreTypesViewModel: ScoreTypesViewModel = viewModel(factory = ScoreTypesViewModelFactory(scoreTypesRepository))
+
+    val playersRepository = PlayersRepository(database.playersDao())
+    val playersViewModel: PlayersViewModel = viewModel(factory = PlayersViewModelFactory(playersRepository))
+
+
+    // ADDED: ScoresViewModel is required to create initial scores
+    val scoresRepository = ScoresRepository(database.scoresDao())
+    val scoresViewModel: ScoresViewModel = viewModel(factory = ScoresViewModelFactory(scoresRepository))
 
     val settingsRepository = SettingsRepository(database.settingsDao())
-    val settingsViewModelFactory = SettingsViewModelFactory(settingsRepository)
-    val settingsViewModel: SettingsViewModel = viewModel(factory = settingsViewModelFactory)
+    val settingsViewModel: SettingsViewModel = viewModel(factory = SettingsViewModelFactory(settingsRepository))
 
     Log.d(TAG, "Viemodels setup finish")
 
+    // --- State Variables ---
     val themeMode by settingsViewModel.themeMode.collectAsState()
     val gameTypes by gameTypesViewModel.allGameTypes.collectAsState()
-    //val lastGame by gamesViewModel.lastGame.collectAsState()
-    //val emptyGame = gamesViewModel.emptyGame()
 
     val names = remember { mutableStateListOf<String>() }
     val thisGameType = remember { mutableStateOf(gameTypesViewModel.emptyGameType()) }
@@ -133,22 +139,30 @@ fun SetupPage(navController: NavController, gameType: Int, gameColor: Color) {
         Log.d(TAG, "gameTypes LaunchedEffect called")
         if (gameTypes.isNotEmpty()) {
             Log.d(TAG, "gameTypes is not empty")
-            val newGameType = gameTypesViewModel.getGameTypeById(gameType)!!
-            thisGameType.value = newGameType // Update the State
-            selectedPlayerCount = minPlayers
-            Log.d(TAG, "selectedPlayerCount: $selectedPlayerCount")
-            names.clear()
-            repeat(maxPlayers) {
-                names.add("")
+
+            val foundGameType = gameTypes.find { it?.id == gameType }
+
+            if (foundGameType != null) {
+                thisGameType.value = foundGameType // Update the State
+                selectedPlayerCount = minPlayers
+                Log.d(TAG, "selectedPlayerCount: $selectedPlayerCount")
+                names.clear()
+                // Initialize the names list with empty strings up to the max player count
+                repeat(foundGameType.maxPlayers) {
+                    names.add("")
+                }
+                kotlinx.coroutines.delay(1000) // Consider if this delay is necessary
+                showSetup.value = true
+            } else {
+                Log.e(TAG, "Could not find GameType with ID: $gameType in the loaded list.")
+                // Handle the error, maybe navigate back or show a message
             }
-            kotlinx.coroutines.delay(1000)
-            showSetup.value = true
+
         } else {
             Log.d(TAG, "gameTypes is empty")
         }
     }
 
-    val allowedChars = remember { ('a'..'z') + ('A'..'Z') + ('0'..'9') } // Define allowed characters
 
     val backgroundColor = if (themeMode == 0) black else white
     val fontColor = if (themeMode == 0) white else black
@@ -164,7 +178,8 @@ fun SetupPage(navController: NavController, gameType: Int, gameColor: Color) {
         verticalArrangement = Arrangement.Top
     ) {
         if(showSetup.value) {
-            PageTitle("GAME SETUP", R.drawable.games_retro, navController)
+            Spacer(modifier = Modifier.height(64.dp))
+            WidgetTitle("GAME SETUP", R.drawable.games_retro, navController)
             Spacer(modifier = Modifier.height(28.dp))
             var buttonIconId = 0
             when (thisGameType.value.type) {
@@ -219,7 +234,7 @@ fun SetupPage(navController: NavController, gameType: Int, gameColor: Color) {
                         .padding(0.dp),
                     selectedbgcolor = gameColor,
                     bgcolor = buttonColor,
-                    textcolor = buttonFontColor,
+                    textcolor = buttonFontColor
                 )
             }
 
@@ -236,7 +251,7 @@ fun SetupPage(navController: NavController, gameType: Int, gameColor: Color) {
                         .padding(horizontal = 12.dp),
                     textAlign = TextAlign.Left
                 )
-                for (i in 0..maxPlayers-1) {
+                for (i in 0 until maxPlayers) {
                     val isSelected = i < selectedPlayerCount
                     var inputcolor = buttonColor
                     if (isSelected && thisGameType.value.name != "Truco"){
@@ -253,7 +268,7 @@ fun SetupPage(navController: NavController, gameType: Int, gameColor: Color) {
                             Text(
                                 text = "Player Name",
                                 style = TextStyle(
-                                    color = buttonFontColor,
+                                    color = buttonFontColor.copy(alpha=0.5f),
                                     fontSize = 32.sp,
                                     fontFamily = LeagueGothic
                                 )
@@ -262,7 +277,7 @@ fun SetupPage(navController: NavController, gameType: Int, gameColor: Color) {
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(64.dp)
-                            .padding(horizontal = 12.dp, vertical = 0.dp),
+                            .padding(horizontal = 12.dp, vertical = 4.dp),
                         shape = RoundedCornerShape(10.dp),
                         textStyle = TextStyle(
                             fontFamily = LeagueGothic,
@@ -271,16 +286,13 @@ fun SetupPage(navController: NavController, gameType: Int, gameColor: Color) {
                         ),
                         singleLine = true,
                         colors = TextFieldDefaults.colors(
-                            unfocusedContainerColor = inputcolor, // Background when not focused
-                            focusedContainerColor = inputcolor, // Background when focused
-                            unfocusedIndicatorColor = Color.Transparent, // Remove the underline when not focused
-                            focusedIndicatorColor = buttonFontColor, // Remove the underline when focused
-                            disabledContainerColor = fontColor,
+                            unfocusedContainerColor = inputcolor,
+                            focusedContainerColor = inputcolor,
+                            disabledContainerColor = inputcolor.copy(alpha = 0.3f),
+                            focusedIndicatorColor = Color.Transparent,
+                            unfocusedIndicatorColor = Color.Transparent,
                             disabledIndicatorColor = Color.Transparent,
-                            disabledTextColor = Color.Transparent,
-                            disabledLabelColor = Color.Transparent,
-                            disabledPlaceholderColor = Color.Transparent,
-                            cursorColor = Color.Transparent,
+                            cursorColor = buttonFontColor
                         ),
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text)
 
@@ -304,24 +316,52 @@ fun SetupPage(navController: NavController, gameType: Int, gameColor: Color) {
                             Log.d(TAG, "START GAME button clicked")
 
                             coroutineScope.launch {
+                                // FIXED: Corrected logic to match new architecture
+                                // 1. Create the new game object and insert it to get its ID.
+                                val gameToInsert = Games(
+                                    id_GameType = thisGameType.value.id,
+                                )
+                                val gameId = gamesViewModel.addNewGame(gameToInsert)
+                                Log.d(TAG, "New game created with ID: $gameId")
 
-                                //gamesViewModel.addNewGame(emptyGame)
-                                //kotlinx.coroutines.delay(500) // short delay to avoid busy-waiting
-                                //gamesViewModel.getLastGame()
-                                //kotlinx.coroutines.delay(500) // short delay to avoid busy-waiting
-                                //val gameId = gamesViewModel.lastGame.value?.id ?: 0
-                                //kotlinx.coroutines.delay(500)
+                                // 2. Get the required ScoreTypes for this game.
+                                val scoreTypesForGame = scoreTypesViewModel.getScoreTypesForGame(thisGameType.value.id)
+                                Log.d(TAG, "Found ${scoreTypesForGame.size} score types for game type ${thisGameType.value.id}")
 
-                                // check player names up to selectedPlayerCount and replace with default if empty
+                                // 3. Iterate through players to insert them and their initial scores.
                                 for (i in 0 until selectedPlayerCount) {
-                                    if (names[i].isEmpty()) {
-                                        names[i] = defaultNames[i]
+                                    val playerName = if (names[i].isNotBlank()) names[i] else defaultNames[i]
+
+                                    // 3a. Create and insert the player to get their ID.
+                                    val newPlayer = Players(
+                                        id_game = gameId.toInt(),
+                                        name = playerName
+                                    )
+                                    val newPlayerId = playersViewModel.addNewPlayer(newPlayer)
+                                    Log.d(TAG, "Player '$playerName' created with ID: $newPlayerId")
+
+                                    // 3b. CRITICAL: Create an initial score entry (usually 0) for each required score type.
+                                    scoreTypesForGame.forEach { scoreType ->
+                                        val initialScore = Scores(
+                                            id_player = newPlayerId.toInt(),
+                                            id_score_type = scoreType.id,
+                                            score = 0,
+                                            isFinalScore = false
+                                        )
+                                        scoresViewModel.addScore(initialScore)
+                                        Log.d(TAG, "Initial score created for player $newPlayerId for score type '${scoreType.name}'")
                                     }
                                 }
-                                val playerNamesToPass = names.take(selectedPlayerCount).toTypedArray()
-                                Log.d(TAG, "Navigating to Game screen")
-                                Log.d(TAG, "game_type: $gameType")
-                                navController.navigate(Screen.Game.createRoute( gameTypeId = gameType, playerNames = playerNamesToPass))
+
+                                // 4. Navigate to the game screen using only the new game's ID.
+                                val playerNamesArray = names.take(selectedPlayerCount).toTypedArray()
+                                navController.navigate(
+                                    Screen.Game.createRoute(
+                                        gameId = gameId.toInt(),
+                                        gameTypeId = thisGameType.value.id,
+                                        playerNames = playerNamesArray
+                                    )
+                                )
                             }
                         }
                     )
@@ -329,7 +369,7 @@ fun SetupPage(navController: NavController, gameType: Int, gameColor: Color) {
                 Spacer(modifier = Modifier.height(40.dp))
             }
         } else {
-            LoadingMessage("LOADING", themeMode, gameColor)
+            LoadingMessage(wheelColor = fontColor, themeMode = themeMode)
         }
     }
 }

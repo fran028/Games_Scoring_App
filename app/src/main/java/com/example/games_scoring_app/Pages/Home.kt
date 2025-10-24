@@ -38,6 +38,7 @@ import com.example.games_scoring_app.Components.ButtonBar
 import com.example.games_scoring_app.Components.IconButtonBar
 import com.example.games_scoring_app.R
 import com.example.games_scoring_app.Components.PageTitle
+import com.example.games_scoring_app.Components.WidgetTitle
 import com.example.games_scoring_app.Data.AppDatabase
 import com.example.games_scoring_app.Data.GameTypesRepository
 import com.example.games_scoring_app.Data.GamesRepository
@@ -108,7 +109,8 @@ fun HomePage(navController: NavController) {
         horizontalAlignment = Alignment.Start,
         verticalArrangement = Arrangement.Top
     ) {
-        PageTitle(appName.uppercase(), R.drawable.game_topview, navController);
+        Spacer(modifier = Modifier.height(64.dp))
+        WidgetTitle(appName.uppercase(), R.drawable.game_topview, navController);
 
         /*Spacer(modifier = Modifier.height(20.dp))
         Text(

@@ -15,17 +15,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -33,6 +24,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.games_scoring_app.Data.PlayerWithScores
+import com.example.games_scoring_app.Data.ScoreTypes
+import com.example.games_scoring_app.Data.Scores
 import com.example.games_scoring_app.Theme.LeagueGothic
 import com.example.games_scoring_app.Theme.black
 import com.example.games_scoring_app.Theme.blue
@@ -42,24 +36,24 @@ import com.example.games_scoring_app.Theme.white
 
 
 @Composable
-fun LevelsScoreboard(players: Array<String>, themeMode: Int) {
+fun LevelsScoreboard(
+    playersWithScores: List<PlayerWithScores>,
+    scoreTypes: List<ScoreTypes>,
+    themeMode: Int,
+    onAddScore: (Scores) -> Unit,
+    onUpdateScore: (Scores) -> Unit
+) {
     val TAG = "LevelsScoreboard"
-    Log.d(TAG, "PuntosScoreboard called")
-    var emptyPlayers = false
-
-    for (player in players) {
-        if (player == null) {
-            emptyPlayers = true
-            break
-        }
-    }
 
     val backgroundColor = if (themeMode == 0) black else white
     val fontColor = if (themeMode == 0) white else black
     val buttonColor = if (themeMode == 0) white else black
     val buttonFontColor = if (themeMode == 0) black else white
 
-    if (emptyPlayers) {
+    // Find the relevant ScoreType for "Levels", which is usually one "Final Score".
+    val finalScoreType = scoreTypes.find { it.name == "Final Score" }
+
+    if (playersWithScores.isEmpty() || finalScoreType == null) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -70,7 +64,7 @@ fun LevelsScoreboard(players: Array<String>, themeMode: Int) {
             verticalArrangement = Arrangement.Center
         ) {
             Text(
-                text = "DATA ERROR",
+                text = "LOADING DATA...",
                 fontFamily = LeagueGothic,
                 fontSize = 48.sp,
                 color = fontColor,
@@ -78,15 +72,10 @@ fun LevelsScoreboard(players: Array<String>, themeMode: Int) {
             )
         }
     } else {
-        val playerLevels = remember { List(players.size) { 0 }.toMutableStateList() }
-        val numPlayers = players.size
+        val numPlayers = playersWithScores.size
         val minwidth = 40.dp
-        val maxwidth = (372 / players.size - 6.4 * (players.size-1)).dp
-        Log.d(TAG, "player size: ${players.size}")
-        Log.d(TAG, "maxwidth: $maxwidth")
+        val maxwidth = (372 / playersWithScores.size - 6.4 * (playersWithScores.size-1)).dp
         val width = if (maxwidth < minwidth) minwidth else maxwidth
-
-
 
         Column(
             modifier = Modifier
@@ -103,19 +92,42 @@ fun LevelsScoreboard(players: Array<String>, themeMode: Int) {
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.Top
             ) {
-                players.forEachIndexed { index, player ->
-                    val playerNameDisplay =
-                        if (numPlayers > 3 && player.length > 3) player.substring(0, 3) else player
+                playersWithScores.forEach { playerWithScores ->
+                    val player = playerWithScores.player
+                    val playerNameDisplay = if (numPlayers > 3 && player.name.length > 3) player.name.substring(0, 3) else player.name
+
+                    // The player's level is stored in the 'score' property of their first and only Scores object.
+                    val levelScore = playerWithScores.scores.firstOrNull()
+                    val currentLevel = levelScore?.score ?: 0
+
                     PlayerLevelColumn(
                         playerName = playerNameDisplay,
-                        currentLevel = playerLevels[index],
+                        currentLevel = currentLevel,
                         width = width,
                         onLevelUp = {
-                            playerLevels[index] = playerLevels[index] + 1
+                            val newLevel = currentLevel + 1
+                            if (levelScore != null) {
+                                // If a score entry exists, update it
+                                onUpdateScore(levelScore.copy(score = newLevel))
+                            } else {
+                                // If no score entry exists, create one
+                                val newScore = Scores(
+                                    id_player = player.id,
+                                    id_score_type = finalScoreType.id,
+                                    score = newLevel,
+                                    isFinalScore = true
+                                )
+                                onAddScore(newScore)
+                            }
                         },
                         onLevelDown = {
-                            if (playerLevels[index] > 0) { // Assuming level cannot go below 0
-                                playerLevels[index] = playerLevels[index] - 1
+                            if (currentLevel > 0) {
+                                val newLevel = currentLevel - 1
+                                if (levelScore != null) {
+                                    // Update the existing score entry
+                                    onUpdateScore(levelScore.copy(score = newLevel))
+                                }
+                                // No need for an 'else' here, as you can't level down from 0
                             }
                         },
                         buttonColor = buttonColor,
@@ -161,7 +173,7 @@ private fun PlayerLevelColumn(
                 fontFamily = LeagueGothic,
                 fontSize = 24.sp,
                 color = black,
-                textAlign = TextAlign.Right,
+                textAlign = TextAlign.Center, // Changed for better alignment
             )
         }
         Spacer(modifier = Modifier.height(6.dp))
@@ -174,9 +186,7 @@ private fun PlayerLevelColumn(
                     shape = RoundedCornerShape(7.5.dp)
                 )
                 .padding(2.5.dp)
-                .clickable {
-                    onLevelDown()
-                },
+                .clickable { onLevelDown() },
             contentAlignment = Alignment.Center
         ) {
             Text(
@@ -184,33 +194,33 @@ private fun PlayerLevelColumn(
                 fontFamily = LeagueGothic,
                 fontSize = 32.sp,
                 color = black,
-                textAlign = TextAlign.Right,
+                textAlign = TextAlign.Center,
             )
         }
         Spacer(modifier = Modifier.height(6.dp))
-        for (level in 1..currentLevel) {
-            Box(
-                modifier = Modifier
-                    .width(width)
-                    .height(45.dp)
-                    .background(
-                        /*if (TotalScore(scoresList) >= maxScore) red else*/ buttonColor, // Use scoresList here
-                        shape = RoundedCornerShape(7.5.dp)
-                    )
-                    .padding(2.5.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = "",
-                    fontFamily = LeagueGothic,
-                    fontSize = 24.sp,
-                    color = buttonFontColor,
-                    textAlign = TextAlign.Right,
+        // This box now represents the player's current level number
+        Box(
+            modifier = Modifier
+                .width(width)
+                .height(45.dp)
+                .background(
+                    buttonColor,
+                    shape = RoundedCornerShape(7.5.dp)
                 )
-            }
-
-            Spacer(modifier = Modifier.height(6.dp))
+                .padding(2.5.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = currentLevel.toString(),
+                fontFamily = LeagueGothic,
+                fontSize = 32.sp,
+                color = buttonFontColor,
+                textAlign = TextAlign.Center,
+            )
         }
+
+        Spacer(modifier = Modifier.height(6.dp))
+
         Box(
             modifier = Modifier
                 .width(width)
@@ -225,7 +235,7 @@ private fun PlayerLevelColumn(
                 fontFamily = LeagueGothic,
                 fontSize = 24.sp,
                 color = black,
-                textAlign = TextAlign.Right,
+                textAlign = TextAlign.Center,
             )
         }
     }

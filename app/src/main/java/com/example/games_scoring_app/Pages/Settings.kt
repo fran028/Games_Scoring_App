@@ -30,6 +30,7 @@ import androidx.navigation.NavController
 import com.example.games_scoring_app.Components.IconButtonBar
 import com.example.games_scoring_app.Components.PageTitle
 import com.example.games_scoring_app.Components.SettingsButtonBar
+import com.example.games_scoring_app.Components.WidgetTitle
 import com.example.games_scoring_app.Data.AppDatabase
 import com.example.games_scoring_app.Data.GameTypesRepository
 import com.example.games_scoring_app.Data.SettingsRepository
@@ -82,7 +83,8 @@ fun SettingsPage(navController: NavController) {
         horizontalAlignment = Alignment.Start,
         verticalArrangement = Arrangement.Top
     ) {
-        PageTitle("SETTINGS", R.drawable.game_topview, navController);
+        Spacer(modifier = Modifier.height(64.dp))
+        WidgetTitle("SETTINGS", R.drawable.game_topview, navController);
 
         val themeModeColor = if(themeMode == 0) white else black
         val themeModeTitle = if(themeMode == 0) "Dark Mode" else "Light Mode"

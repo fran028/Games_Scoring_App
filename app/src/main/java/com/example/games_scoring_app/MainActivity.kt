@@ -159,10 +159,14 @@ fun MainScreen() {
                 composable(
                     route = Screen.Game.route,
                     arguments = listOf(
-                        navArgument("gameTypeId") { type = NavType.IntType }
-                        ,navArgument("playerNames") { type = NavType.StringType }
+                        // ADDED: Define the gameId argument
+                        navArgument("gameId") { type = NavType.IntType },
+                        navArgument("gameTypeId") { type = NavType.IntType },
+                        navArgument("playerNames") { type = NavType.StringType }
                     )
                 ) { backStackEntry ->
+                    // ADDED: Extract the gameId from the backStackEntry
+                    val gameId = backStackEntry.arguments?.getInt("gameId") ?: 0
                     val gameTypeId = backStackEntry.arguments?.getInt("gameTypeId") ?: 0
                     val encodedPlayerNamesString = backStackEntry.arguments?.getString("playerNames")
 
@@ -170,9 +174,13 @@ fun MainScreen() {
                         val decodedNames = Uri.decode(it) // Decode the string
                         decodedNames.split("‚‗‚").toTypedArray() // Split by your chosen separator
                     }
+
+                    // Ensure playerNames is not null before proceeding
                     if (playerNames != null) {
                         GamePage(
                             navController = navController,
+                            // ADDED: Pass the extracted gameId to the composable
+                            gameId = gameId,
                             gameTypeId = gameTypeId,
                             playerNames = playerNames
                         )

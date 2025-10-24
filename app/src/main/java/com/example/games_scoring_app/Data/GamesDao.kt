@@ -12,6 +12,10 @@ interface GamesDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertGame(game: Games)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun addNewGame(game: Games): Long // Make it a suspend function returning Long
+
     @Update
     fun updateGame(game: Games)
     @Delete

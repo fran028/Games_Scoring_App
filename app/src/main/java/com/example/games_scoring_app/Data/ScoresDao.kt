@@ -10,11 +10,21 @@ import androidx.room.Update
 @Dao
 interface ScoresDao {
 
+    /**
+     * NEW: Inserts a single score entry into the database.
+     * This will be used by the SetUp page to create the initial scores.
+     * OnConflictStrategy.REPLACE is a safe default, though for initial scores,
+     * it's unlikely to conflict.
+     */
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insertScore(score: Scores)
+    suspend fun insertScore(score: Scores)
 
+    /**
+     * Updates an existing score entry.
+     * This is used by the game scoreboards when a player's score changes.
+     */
     @Update
-    fun updateScore(score: Scores)
+    suspend fun updateScore(score: Scores)
 
     @Delete
     fun deleteScore(score: Scores)

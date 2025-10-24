@@ -13,22 +13,42 @@ import kotlinx.coroutines.withContext
 
 class GameTypesViewModel(private val gameTypesRepository: GameTypesRepository) : ViewModel() {
     fun insertGameType(gameType: GameTypes) {
-        gameTypesRepository.insertGameType(gameType)
+        viewModelScope.launch(Dispatchers.IO) {
+            gameTypesRepository.insertGameType(gameType)
+        }
     }
 
     private val _allGameTypes = MutableStateFlow<List<GameTypes?>>(listOf())
     val allGameTypes: StateFlow<List<GameTypes?>> = _allGameTypes
 
-    fun getAllGameTypes(){
+    private val _gameType = MutableStateFlow<GameTypes?>(null)
+    val gameType: StateFlow<GameTypes?> = _gameType
+
+
+    fun getAllGameTypes() {
         viewModelScope.launch(Dispatchers.IO) {
-            val gamesTypeList = gameTypesRepository.getAllGameTypes()
-            withContext(Dispatchers.Main) {
-                _allGameTypes.value = gamesTypeList
+            // Collect the values from the Flow
+            gameTypesRepository.getAllGameTypes().collect { gamesTypeList ->
+                // Update the StateFlow on the main thread with the emitted list
+                withContext(Dispatchers.Main) {
+                    _allGameTypes.value = gamesTypeList
+                }
             }
         }
     }
 
-    suspend fun getGameTypeById(id: Int): GameTypes? {
+    fun getGameTypeById(id: Int) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val result = gameTypesRepository.getGameTypeById(id)
+            // Update the StateFlow on the main thread
+            withContext(Dispatchers.Main) {
+                _gameType.value = result
+            }
+        }
+    }
+
+    // This suspend function can be kept if needed elsewhere, but the one above is what Game.kt will use.
+    suspend fun fetchGameTypeById(id: Int): GameTypes? {
         return gameTypesRepository.getGameTypeById(id)
     }
 
@@ -43,6 +63,8 @@ class GameTypesViewModel(private val gameTypesRepository: GameTypesRepository) :
     }
 
     fun getGameTypeNameById(id: Int): String? {
+        // This function is inefficient. It's better to fetch directly from the repository.
+        // But if you keep it, ensure getAllGameTypes() has been called first.
         val gameType = allGameTypes.value.find { it?.id == id }
         return gameType?.name
     }

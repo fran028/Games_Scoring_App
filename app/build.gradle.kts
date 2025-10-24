@@ -19,6 +19,8 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+
+
     buildTypes {
         release {
             isMinifyEnabled = true
@@ -74,4 +76,5 @@ dependencies {
     implementation("androidx.room:room-guava:$roomversion")
     testImplementation("androidx.room:room-testing:$roomversion")
     implementation("androidx.room:room-paging:$roomversion")
+    
 }

@@ -38,9 +38,9 @@ class GamesViewModel(private val gamesRepository: GamesRepository) : ViewModel()
         }
     }
 
-    fun addNewGame(game: Games){
-        viewModelScope.launch(Dispatchers.IO) {
-            gamesRepository.insertGame(game)
+    suspend fun addNewGame(game: Games): Long {
+        return withContext(Dispatchers.IO) {
+            gamesRepository.addNewGame(game)
         }
     }
 

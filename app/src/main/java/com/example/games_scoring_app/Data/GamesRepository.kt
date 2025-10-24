@@ -5,6 +5,11 @@ class GamesRepository(private val gamesDao: GamesDao) {
         gamesDao.insertGame(game)
     }
 
+    suspend fun addNewGame(game: Games): Long {
+        return gamesDao.addNewGame(game)
+    }
+
+
     fun updateGame(game: Games) {
         gamesDao.updateGame(game)
     }

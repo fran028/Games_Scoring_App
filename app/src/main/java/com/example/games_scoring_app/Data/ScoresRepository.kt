@@ -2,11 +2,18 @@ package com.example.games_scoring_app.Data
 
 class ScoresRepository(private val scoresDao: ScoresDao) {
 
-    fun insertScore(score: Scores) {
+    /**
+     * NEW: A suspend function to insert a score via the DAO.
+     * This will be called from the ScoresViewModel.
+     */
+    suspend fun insertScore(score: Scores) {
         scoresDao.insertScore(score)
     }
 
-    fun updateScore(score: Scores) {
+    /**
+     * A suspend function to update a score via the DAO.
+     */
+    suspend fun updateScore(score: Scores) {
         scoresDao.updateScore(score)
     }
 

@@ -2,6 +2,7 @@ package com.example.games_scoring_app.Data
 
 import android.content.Context
 import android.util.Log
+import androidx.compose.ui.geometry.isEmpty
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
@@ -14,8 +15,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 @Database(
-    entities = [Players::class, Games::class, Scores::class, GameTypes::class, Settings::class],
-    version = 3,
+    entities = [Players::class, Games::class, Scores::class, GameTypes::class, Settings::class, ScoreTypes::class],
+    version = 4,
     exportSchema = true,
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -24,6 +25,8 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun scoresDao(): ScoresDao
     abstract fun gameTypesDao(): GameTypesDao
     abstract fun settingsDao(): SettingsDao
+    abstract fun scoreTypesDao(): ScoreTypesDao
+
 
     companion object {
         @Volatile
@@ -78,7 +81,8 @@ abstract class AppDatabase : RoomDatabase() {
                 val database = INSTANCE ?: AppDatabase.getDatabase(appContext, scope)
                 stopSignalDatabaseOperational()
                 Log.d("AppDatabase", "Pre-populating database...")
-                populateDatabase(database.gameTypesDao(), database.settingsDao())
+                // --- CHANGE 1: Pass the new DAO here ---
+                populateDatabase(database.gameTypesDao(), database.settingsDao(), database.scoreTypesDao())
                 Log.d("AppDatabase", "Database pre-populated.")
                 signalDatabaseOperational()
             }
@@ -86,83 +90,67 @@ abstract class AppDatabase : RoomDatabase() {
         }
 
 
-        suspend fun populateDatabase(gameTypesDao: GameTypesDao, settingsDao: SettingsDao) {
+        // --- CHANGE 2: Add the ScoreTypesDao parameter ---
+        suspend fun populateDatabase(gameTypesDao: GameTypesDao, settingsDao: SettingsDao, scoreTypesDao: ScoreTypesDao) {
 
-            gameTypesDao.deleteGamesType()
+            // Only clear and populate if the tables are empty to avoid wiping data on every open
+            if (gameTypesDao.getAllGameTypesAsList().isEmpty()) {
+                Log.d("AppDatabase", "GameTypes table is empty, populating...")
 
-            val settings = settingsDao.getSettings()
+                val settings = settingsDao.getSettings()
 
-            if (settings.isEmpty()) {
-                settingsDao.insertSettings(Settings(name = "theme", value = 0))
-            } else {
-                var themeModeLoaded = false
-                for (setting in settings) {
-                    if (setting.name == "theme") {
-                        themeModeLoaded = true
-                        break
+                if (settings.isEmpty()) {
+                    settingsDao.insertSettings(Settings(name = "theme", value = 0))
+                } else {
+                    var themeModeLoaded = false
+                    for (setting in settings) {
+                        if (setting.name == "theme") {
+                            themeModeLoaded = true
+                            break
+                        }
+                    }
+
+                    if (!themeModeLoaded) {
+                        settingsDao.insertSettings(Settings(name = "theme", value = 0))
                     }
                 }
 
-                if (!themeModeLoaded) {
-                    settingsDao.insertSettings(Settings(name = "theme", value = 0))
-                }
+
+
+                // Add your initial data here using your DAO
+                Log.d("AppDatabase", "Adding initial data to database...")
+                // Note: The insert function needs to return the ID to link the score types
+                val trucoId = gameTypesDao.insertGameType(GameTypes(name = "Truco", maxPlayers = 2, minPlayers = 2, maxScore = 30, type = "Cartas"))
+                val generalaId = gameTypesDao.insertGameType(GameTypes(name = "Generala", maxPlayers = 8, minPlayers = 1, maxScore = 370, type = "Dados"))
+                val pointsId = gameTypesDao.insertGameType(GameTypes(name = "Points", maxPlayers = 8, minPlayers = 2, maxScore = 1000, type = "Generico"))
+                val rankingId = gameTypesDao.insertGameType(GameTypes(name = "Ranking", maxPlayers = 8, minPlayers = 3, maxScore = 0, type = "Generico"))
+                val levelsId = gameTypesDao.insertGameType(GameTypes(name = "Levels", maxPlayers = 8, minPlayers = 1, maxScore = 0, type = "Generico"))
+
+                // --- CHANGE 3: Populate the ScoreTypes table ---
+                Log.d("AppDatabase", "Populating ScoreTypes...")
+                scoreTypesDao.insertScoreType(ScoreTypes(id_game_type = trucoId.toInt(), name = "Final Score"))
+
+                // Generala Score Types
+                scoreTypesDao.insertScoreType(ScoreTypes(id_game_type = generalaId.toInt(), name = "Aces"))
+                scoreTypesDao.insertScoreType(ScoreTypes(id_game_type = generalaId.toInt(), name = "Twos"))
+                scoreTypesDao.insertScoreType(ScoreTypes(id_game_type = generalaId.toInt(), name = "Threes"))
+                scoreTypesDao.insertScoreType(ScoreTypes(id_game_type = generalaId.toInt(), name = "Fours"))
+                scoreTypesDao.insertScoreType(ScoreTypes(id_game_type = generalaId.toInt(), name = "Fives"))
+                scoreTypesDao.insertScoreType(ScoreTypes(id_game_type = generalaId.toInt(), name = "Sixes"))
+                scoreTypesDao.insertScoreType(ScoreTypes(id_game_type = generalaId.toInt(), name = "Straight"))
+                scoreTypesDao.insertScoreType(ScoreTypes(id_game_type = generalaId.toInt(), name = "Full House"))
+                scoreTypesDao.insertScoreType(ScoreTypes(id_game_type = generalaId.toInt(), name = "Poker"))
+                scoreTypesDao.insertScoreType(ScoreTypes(id_game_type = generalaId.toInt(), name = "Generala"))
+
+                // Generic Score Types
+                scoreTypesDao.insertScoreType(ScoreTypes(id_game_type = pointsId.toInt(), name = "Final Score"))
+                scoreTypesDao.insertScoreType(ScoreTypes(id_game_type = rankingId.toInt(), name = "Final Score"))
+                scoreTypesDao.insertScoreType(ScoreTypes(id_game_type = levelsId.toInt(), name = "Final Score"))
+
+                Log.d("AppDatabase", "ScoreTypes populated.")
+            } else {
+                Log.d("AppDatabase", "Database already populated.")
             }
-
-
-
-            // Add your initial data here using your DAO
-            Log.d("AppDatabase", "Adding initial data to database...")
-            val item1 = GameTypes(
-                name = "Truco",
-                maxPlayers = 2,
-                minPlayers = 2,
-                maxScore = 30,
-                type = "Cartas"
-
-            )
-            gameTypesDao.insertGameType(item1)
-            Log.d("AppDatabase", "Truco added to database")
-
-            val item2 = GameTypes(
-                name = "Generala",
-                maxPlayers = 8,
-                minPlayers = 1,
-                maxScore = 370,
-                type = "Dados"
-            )
-            gameTypesDao.insertGameType(item2)
-            Log.d("AppDatabase", "Generala added to database")
-
-            val item3 = GameTypes(
-                name = "Points",
-                maxPlayers = 8,
-                minPlayers = 2,
-                maxScore = 1000,
-                type = "Generico"
-            )
-            gameTypesDao.insertGameType(item3)
-            Log.d("AppDatabase", "Points added to database")
-
-            val item4 = GameTypes(
-                name = "Ranking",
-                maxPlayers = 8,
-                minPlayers = 3,
-                maxScore = 0,
-                type = "Generico"
-            )
-            gameTypesDao.insertGameType(item4)
-            Log.d("AppDatabase", "Puntos added to database")
-
-            val item5 = GameTypes(
-                name = "Levels",
-                maxPlayers = 8,
-                minPlayers = 1,
-                maxScore = 0,
-                type = "Generico"
-            )
-            gameTypesDao.insertGameType(item5)
-            Log.d("AppDatabase", "Levels added to database")
-
         }
     }
 }

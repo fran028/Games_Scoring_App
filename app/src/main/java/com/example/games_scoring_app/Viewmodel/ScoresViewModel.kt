@@ -42,14 +42,10 @@ class ScoresViewModel(private val scoresRepository: ScoresRepository) : ViewMode
     fun addEmtpyScoreToAllPlayers(players: List<Players?>){
         viewModelScope.launch(Dispatchers.IO) {
             for (player in players) {
-                val newScore = Scores(id_player = player!!.id, score = 0)
+                val newScore = Scores(id_player = player!!.id, score = 0, isFinalScore = false, id_score_type = 0)
                 addNewScore(newScore)
             }
         }
-    }
-
-    fun updateScore(score: Scores) {
-        scoresRepository.updateScore(score)
     }
 
     fun deleteScore(score: Scores) {
@@ -64,5 +60,25 @@ class ScoresViewModel(private val scoresRepository: ScoresRepository) : ViewMode
 
     fun getScoreByGameId(gameId: Int): Scores? {
         return scoresRepository.getScoreById(gameId)
+    }
+
+    /**
+     * NEW: The function that SetUp.kt needs.
+     * It takes a Scores object and uses viewModelScope to launch a coroutine
+     * that calls the repository to insert it into the database.
+     */
+    fun addScore(score: Scores) {
+        viewModelScope.launch {
+            scoresRepository.insertScore(score)
+        }
+    }
+
+    /**
+     * The function that the game scoreboards will use to update scores.
+     */
+    fun updateScore(score: Scores) {
+        viewModelScope.launch {
+            scoresRepository.updateScore(score)
+        }
     }
 }

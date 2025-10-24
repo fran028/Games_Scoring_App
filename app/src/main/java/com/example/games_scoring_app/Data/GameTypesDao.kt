@@ -6,23 +6,24 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
+import kotlinx.coroutines.flow.Flow // Make sure this import is added
 
 @Dao
 interface GameTypesDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insertGameType(gameType: GameTypes)
+    suspend fun insertGameType(gameType: GameTypes): Long
 
     @Update
-    fun updateGameType(gameType: GameTypes)
+    suspend fun updateGameType(gameType: GameTypes) // Changed to suspend for consistency
 
     @Delete
-    fun deleteGameType(gameType: GameTypes)
+    suspend fun deleteGameType(gameType: GameTypes) // Changed to suspend for consistency
 
     @Query("DELETE FROM gameTypes")
     suspend fun deleteGamesType()
 
-    @Query("SELECT * FROM gameTypes")
-    fun getAllGameTypes(): List<GameTypes>
+    @Query("SELECT * FROM gameTypes ORDER BY name ASC")
+    fun getAllGameTypes(): Flow<List<GameTypes>>
 
     @Query("SELECT count(*) as amount FROM gameTypes")
     fun getGameTypeAmount(): Int
@@ -31,14 +32,11 @@ interface GameTypesDao {
     suspend fun getGameTypeById(id: Int): GameTypes?
 
     @Query("SELECT * FROM gameTypes WHERE name = :name")
-    fun getGameTypeByName(name: String): GameTypes?
+    suspend fun getGameTypeByName(name: String): GameTypes? // Changed to suspend
 
+    @Query("SELECT * FROM score_types WHERE id_game_type = :gameTypeId")
+    suspend fun getScoreTypesByGameTypeIdAsList(gameTypeId: Int): List<ScoreTypes>
 
-    companion object {
-        fun insertGameType(item: GameTypes) {
-
-        }
-    }
-
-
+    @Query("SELECT * FROM gameTypes")
+    suspend fun getAllGameTypesAsList(): List<GameTypes>
 }
