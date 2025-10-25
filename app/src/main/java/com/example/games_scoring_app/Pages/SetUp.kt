@@ -3,8 +3,11 @@ package com.example.games_scoring_app.Pages
 import android.os.Build
 import android.util.Log
 import androidx.annotation.RequiresApi
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -32,6 +35,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
@@ -60,6 +64,7 @@ import com.example.games_scoring_app.R
 import com.example.games_scoring_app.Screen
 import com.example.games_scoring_app.Theme.LeagueGothic
 import com.example.games_scoring_app.Theme.black
+import com.example.games_scoring_app.Theme.gray
 import com.example.games_scoring_app.Theme.green
 import com.example.games_scoring_app.Theme.white
 import com.example.games_scoring_app.Viewmodel.GameTypesViewModel
@@ -196,7 +201,7 @@ fun SetupPage(navController: NavController, gameType: Int, gameColor: Color) {
                     buttonIconId = R.drawable.paper
                 }
             }
-            Column (Modifier.padding(horizontal = 30.dp )) {
+            Column (Modifier.padding(horizontal = 16.dp )) {
                 IconButtonBar(
                     text = thisGameType.value.name.uppercase(),
                     bgcolor = gameColor,
@@ -210,35 +215,53 @@ fun SetupPage(navController: NavController, gameType: Int, gameColor: Color) {
             }
 
             if(thisGameType.value.name != "Truco") {
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = "Player Amount",
-                    fontFamily = LeagueGothic,
-                    fontSize = 48.sp,
-                    color = fontColor,
-                    modifier = Modifier
-                        .padding(horizontal = 32.dp)
-                        .fillMaxWidth()
-                        .align(Alignment.CenterHorizontally),
-                    textAlign = TextAlign.Left
-                )
-
-                PlayerAmountGrid(
-                    maxPlayers = maxPlayers,
-                    minPlayers = minPlayers,
-                    onPlayerAmountSelected = { amount ->
-                        selectedPlayerCount = amount
-                    },
+                Spacer(modifier = Modifier.height(16.dp))
+                Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(0.dp),
-                    selectedbgcolor = gameColor,
-                    bgcolor = buttonColor,
-                    textcolor = buttonFontColor
-                )
+                        .padding(horizontal = 16.dp)
+                        .background(buttonColor, shape = RoundedCornerShape(10.dp))
+                        .clip(RoundedCornerShape(10.dp))
+                ) {
+                    Column(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            text = "Player Amount",
+                            fontFamily = LeagueGothic,
+                            fontSize = 48.sp,
+                            color = buttonFontColor,
+                            modifier = Modifier
+                                // Give it padding so it's not at the very edge of the box
+                                .padding(horizontal = 16.dp, vertical = 4.dp)
+                                .fillMaxWidth(), // Make text take full width to apply alignment
+                            textAlign = TextAlign.Left
+                        )
+                        // The Spacer is optional but can add a little breathing room
+                        Spacer(modifier = Modifier.height(4.dp))
+                        PlayerAmountGrid(
+                            maxPlayers = maxPlayers,
+                            minPlayers = minPlayers,
+                            onPlayerAmountSelected = { amount ->
+                                selectedPlayerCount = amount
+                            },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                // Add horizontal padding to align it with the title
+                                .padding(horizontal = 8.dp)
+                                // Add bottom padding for spacing inside the box
+                                .padding(bottom = 8.dp),
+                            selectedbgcolor = gameColor,
+                            // These colors were also incorrect in your provided snippet
+                            bgcolor = backgroundColor, // Unselected should be the main background
+                            textcolor = fontColor      // Text for unselected should be main font color
+                        )
+                    }
+                }
             }
 
-            Column(modifier = Modifier.padding(horizontal = 20.dp )) {
+            Column(modifier = Modifier.padding(horizontal = 10.dp )) {
                 Spacer(modifier = Modifier.height(20.dp))
                 Text(
                     text = if(thisGameType.value.name == "Truco") "Team Names" else "Player Names",
@@ -251,11 +274,21 @@ fun SetupPage(navController: NavController, gameType: Int, gameColor: Color) {
                         .padding(horizontal = 12.dp),
                     textAlign = TextAlign.Left
                 )
+                Spacer(modifier = Modifier.size(16.dp))
+                //... inside the Column, inside the for loop
                 for (i in 0 until maxPlayers) {
                     val isSelected = i < selectedPlayerCount
                     var inputcolor = buttonColor
                     if (isSelected && thisGameType.value.name != "Truco"){
                         inputcolor = gameColor
+                    }
+
+                    // Define the border based on whether the TextField is enabled (isSelected)
+                    val border = if (isSelected) {
+                        BorderStroke(4.dp, inputcolor)
+                    } else {
+                        // Use a transparent border for disabled fields to maintain layout consistency
+                        BorderStroke(4.dp, gray)
                     }
 
                     TextField(
@@ -268,31 +301,34 @@ fun SetupPage(navController: NavController, gameType: Int, gameColor: Color) {
                             Text(
                                 text = "Player Name",
                                 style = TextStyle(
-                                    color = buttonFontColor.copy(alpha=0.5f),
-                                    fontSize = 32.sp,
+                                    color = fontColor.copy(alpha=0.5f),
+                                    fontSize = 24.sp,
                                     fontFamily = LeagueGothic
                                 )
                             )
                         },
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(64.dp)
-                            .padding(horizontal = 12.dp, vertical = 4.dp),
+                            .height(80.dp)
+                            .padding(horizontal = 12.dp, vertical = 4.dp)
+                            .border(border, shape = RoundedCornerShape(10.dp)), // Apply the border here
                         shape = RoundedCornerShape(10.dp),
                         textStyle = TextStyle(
                             fontFamily = LeagueGothic,
                             fontSize = 32.sp,
-                            color = buttonFontColor
+                            color = fontColor
                         ),
                         singleLine = true,
                         colors = TextFieldDefaults.colors(
-                            unfocusedContainerColor = inputcolor,
-                            focusedContainerColor = inputcolor,
-                            disabledContainerColor = inputcolor.copy(alpha = 0.3f),
+                            // Set the container color to black (or your desired background)
+                            unfocusedContainerColor = black,
+                            focusedContainerColor = black,
+                            // Adjust the disabled color to be less prominent
+                            disabledContainerColor = black.copy(alpha = 0.3f),
                             focusedIndicatorColor = Color.Transparent,
                             unfocusedIndicatorColor = Color.Transparent,
                             disabledIndicatorColor = Color.Transparent,
-                            cursorColor = buttonFontColor
+                            cursorColor = fontColor
                         ),
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text)
 
@@ -303,6 +339,7 @@ fun SetupPage(navController: NavController, gameType: Int, gameColor: Color) {
                         Spacer(modifier = Modifier.height(12.dp))
                     }
                 }
+
                 Spacer(modifier = Modifier.height(20.dp))
                 Row (modifier = Modifier
                     .fillMaxWidth()
@@ -311,7 +348,7 @@ fun SetupPage(navController: NavController, gameType: Int, gameColor: Color) {
                         text = "START GAME",
                         bgcolor = green,
                         height = 48.dp,
-                        textcolor = black,
+                        textcolor = white,
                         onClick = {
                             Log.d(TAG, "START GAME button clicked")
 

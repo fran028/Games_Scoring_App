@@ -30,4 +30,12 @@ class GamesRepository(private val gamesDao: GamesDao) {
         return gamesDao.getGameById(id)
     }
 
+    suspend fun getGamesCount(gameTypeId: Int): Int {
+        return gamesDao.getGamesCountByGameType(gameTypeId)
+    }
+
+    suspend fun getLastPlayedDate(gameTypeId: Int): String? {
+        return gamesDao.getLastPlayedDateByGameType(gameTypeId)
+    }
+
 }

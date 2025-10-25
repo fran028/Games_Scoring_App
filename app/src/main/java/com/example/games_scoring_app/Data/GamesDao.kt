@@ -30,4 +30,11 @@ interface GamesDao {
     @Query("SELECT * FROM games WHERE id = :id")
     fun getGameById(id: Int): Games?
 
+    // Obtiene el número total de partidas para un tipo de juego
+    @Query("SELECT COUNT(*) FROM games WHERE id_GameType = :gameTypeId")
+    suspend fun getGamesCountByGameType(gameTypeId: Int): Int
+
+    // Obtiene la fecha de la última partida jugada para un tipo de juego
+    @Query("SELECT date FROM games WHERE id_GameType = :gameTypeId ORDER BY id DESC LIMIT 1")
+    suspend fun getLastPlayedDateByGameType(gameTypeId: Int): String?
 }

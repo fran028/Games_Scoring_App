@@ -1,9 +1,12 @@
 package com.example.games_scoring_app.Viewmodel
 
+// REMOVED: import android.icu.util.TimeUnit (This is for API 24+ and is likely the issue)
 import android.os.Build
 import androidx.annotation.RequiresApi
+// REMOVED: import androidx.compose.ui.text.intl.Locale (This is the Compose-specific Locale)
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.games_scoring_app.Data.GameStats
 import com.example.games_scoring_app.Data.Games
 import com.example.games_scoring_app.Data.GamesRepository
 import kotlinx.coroutines.Dispatchers
@@ -11,8 +14,14 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.text.SimpleDateFormat
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
+import java.util.Date
+// --- ADD THIS IMPORT for SimpleDateFormat ---
+import java.util.Locale
+// --- ADD THIS IMPORT for TimeUnit ---
+import java.util.concurrent.TimeUnit
 
 class GamesViewModel(private val gamesRepository: GamesRepository) : ViewModel() {
     private val _lastGame = MutableStateFlow<Games?>(null)
@@ -71,5 +80,42 @@ class GamesViewModel(private val gamesRepository: GamesRepository) : ViewModel()
             date = date
         )
         return emptymatch
+    }
+
+    private val _gameStats = MutableStateFlow<Map<Int, GameStats>>(emptyMap())
+    val gameStats: StateFlow<Map<Int, GameStats>> = _gameStats
+
+    fun getStatsForGameType(gameTypeId: Int) {
+        viewModelScope.launch {
+            val count = gamesRepository.getGamesCount(gameTypeId)
+            val lastDateStr = gamesRepository.getLastPlayedDate(gameTypeId)
+            val daysString = if (lastDateStr != null) {
+                calculateDaysSince(lastDateStr)
+            } else {
+                "N/A" // No se ha jugado nunca
+            }
+
+            _gameStats.value = _gameStats.value + (gameTypeId to GameStats(count, daysString))
+        }
+    }
+
+    private fun calculateDaysSince(dateStr: String): String {
+        // This now correctly references java.util.Locale
+        val dateFormat = SimpleDateFormat("dd/MM/yy", Locale.getDefault())
+        return try {
+            val lastDate = dateFormat.parse(dateStr)
+            val currentDate = Date()
+            val diffInMillis = currentDate.time - lastDate!!.time
+            // This now correctly references java.util.concurrent.TimeUnit
+            val days = TimeUnit.MILLISECONDS.toDays(diffInMillis)
+
+            when {
+                days == 0L -> "Hoy"
+                days == 1L -> "Ayer"
+                else -> "Hace $days días"
+            }
+        } catch (e: Exception) {
+            "N/A" // En caso de error de formato
+        }
     }
 }

@@ -35,7 +35,8 @@ fun IconButtonBar(
     height: Dp,
     icon: Int,
     iconSize: Dp = 24.dp,
-    doubleIcon: Boolean = false
+    doubleIcon: Boolean = false,
+    transparent: Boolean = false
 ) {
     var buttonmodifier = Modifier
         .size(width = width, height = height)
@@ -48,7 +49,7 @@ fun IconButtonBar(
         modifier = buttonmodifier,
         shape = RoundedCornerShape(10.dp),
         colors = ButtonDefaults.buttonColors(
-            containerColor = bgcolor,
+            containerColor =  bgcolor,
             contentColor = textcolor
         )
     ) {

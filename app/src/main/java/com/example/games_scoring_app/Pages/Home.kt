@@ -38,8 +38,10 @@ import com.example.games_scoring_app.Components.ButtonBar
 import com.example.games_scoring_app.Components.IconButtonBar
 import com.example.games_scoring_app.R
 import com.example.games_scoring_app.Components.PageTitle
+import com.example.games_scoring_app.Components.ScoreBoardBox
 import com.example.games_scoring_app.Components.WidgetTitle
 import com.example.games_scoring_app.Data.AppDatabase
+import com.example.games_scoring_app.Data.GameStats
 import com.example.games_scoring_app.Data.GameTypesRepository
 import com.example.games_scoring_app.Data.GamesRepository
 import com.example.games_scoring_app.Data.SettingsRepository
@@ -50,6 +52,8 @@ import com.example.games_scoring_app.Theme.LeagueGothic
 import com.example.games_scoring_app.Theme.RobotoCondensed
 import com.example.games_scoring_app.Theme.blue
 import com.example.games_scoring_app.Theme.cream
+import com.example.games_scoring_app.Theme.darkgray
+import com.example.games_scoring_app.Theme.gray
 import com.example.games_scoring_app.Theme.green
 import com.example.games_scoring_app.Theme.red
 import com.example.games_scoring_app.Theme.yellow
@@ -73,9 +77,9 @@ fun HomePage(navController: NavController) {
     val context = LocalContext.current
     val database = AppDatabase.getDatabase(context, applicationScope)
 
-    /*val gamesRepository = GamesRepository(database.gamesDao())
+    val gamesRepository = GamesRepository(database.gamesDao())
     val gamesViewModelFactory = GamesViewModelFactory(gamesRepository)
-    val gamesViewModel: GamesViewModel = viewModel(factory = gamesViewModelFactory)*/
+    val gamesViewModel: GamesViewModel = viewModel(factory = gamesViewModelFactory)
 
     val gameTypesRepository = GameTypesRepository(database.gameTypesDao())
     val gameTypesViewModelFactory = GameTypesViewModelFactory(gameTypesRepository)
@@ -88,7 +92,7 @@ fun HomePage(navController: NavController) {
     val themeMode by settingsViewModel.themeMode.collectAsState()
     //val lastGame by gamesViewModel.lastGame.collectAsState()
     val gameTypes by gameTypesViewModel.allGameTypes.collectAsState()
-
+    val gameStats by gamesViewModel.gameStats.collectAsState()
     var lastGameType by remember { mutableStateOf("") }
     LaunchedEffect(key1 = Unit) {
         //gamesViewModel.getLastGame()
@@ -96,9 +100,18 @@ fun HomePage(navController: NavController) {
         settingsViewModel.getThemeMode()
     }
 
+    LaunchedEffect(key1 = gameTypes) {
+        gameTypes.forEach { gameType ->
+            gamesViewModel.getStatsForGameType(gameType!!.id)
+        }
+    }
+
     Log.d("HomePage", "themeMode: $themeMode")
-    val backgroundColor = if (themeMode == 0) black else cream
+    val backgroundColor = if (themeMode == 0) black else white
     val fontColor = if (themeMode == 0) white else black
+    val buttonColor = if (themeMode == 0) white else black
+    val buttonFontColor = if (themeMode == 0) black else white
+
 
     Column(
         modifier = Modifier
@@ -147,58 +160,55 @@ fun HomePage(navController: NavController) {
             }
         }*/
         Spacer(modifier = Modifier.height(20.dp))
-        Text(
-            text = "Scoreboards",
-            fontFamily = RobotoCondensed,
-            fontSize = 36.sp,
-            color = fontColor,
-            modifier = Modifier
-                .padding(horizontal = 32.dp)
-                .fillMaxWidth()
-                .align(Alignment.CenterHorizontally),
-            textAlign = TextAlign.Left
-        )
+//        Text(
+//            text = "Scoreboards",
+//            fontFamily = RobotoCondensed,
+//            fontSize = 36.sp,
+//            color = fontColor,
+//            modifier = Modifier
+//                .padding(horizontal = 32.dp)
+//                .fillMaxWidth()
+//                .align(Alignment.CenterHorizontally),
+//            textAlign = TextAlign.Left
+//        )
         Spacer(modifier = Modifier.height(20.dp))
-        Column (Modifier.padding(horizontal = 30.dp )) {
+        Column (Modifier.padding(horizontal = 16.dp )) {
             if (gameTypes.isNotEmpty()) {
                 for (gameType in gameTypes) {
                     if (gameType != null) {
+                        val stats = gameStats[gameType.id] ?: GameStats()
                         var buttonIconId = 0
-                        var buttonColor = yellow
-                        var textcolor = black
+                        var accentColor = yellow
                         when (gameType.type) {
                             "Dados" -> {
                                 buttonIconId = R.drawable.dices
-                                buttonColor = blue
-                                textcolor = black
+                                accentColor = blue
                             }
                             "Cartas" -> {
                                 buttonIconId = R.drawable.card
-                                buttonColor = yellow
-                                textcolor = black
+                                accentColor = yellow
                             }
                             "Generico" -> {
                                 buttonIconId = R.drawable.paper
-                                buttonColor = green
-                                textcolor = black
+                                accentColor = green
                             }
                             else -> {
                                 buttonIconId = R.drawable.paper
-                                buttonColor = white
-                                textcolor = black
+                                accentColor = white
                             }
                         }
-                        IconButtonBar(
-                            text = gameType.name.uppercase(),
-                            bgcolor = buttonColor,
-                            height = 48.dp,
-                            textcolor = textcolor,
-                            onClick = { navController.navigate(Screen.SetUp.createRoute(gameType.id, buttonColor)) },
+                        ScoreBoardBox(
+                            title = gameType.name.uppercase(),
+                            description = gameType.description,
+                            bgcolor = darkgray,
+                            accentColor = accentColor,
+                            textcolor = buttonColor,
+                            onClick = { navController.navigate(Screen.SetUp.createRoute(gameType.id, accentColor)) },
                             icon = buttonIconId,
-                            iconSize = 32.dp,
-                            doubleIcon = true
+                            timesPlayed = stats.timesPlayed,
+                            daysSinceLastPlayed = stats.daysSinceLastPlayed
                         )
-                        Spacer(modifier = Modifier.height(20.dp))
+                        Spacer(modifier = Modifier.height(16.dp))
                     }
                 }
                 /*ButtonBar(

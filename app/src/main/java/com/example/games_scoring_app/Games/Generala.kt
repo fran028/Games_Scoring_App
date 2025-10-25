@@ -112,7 +112,7 @@ fun GeneralaScoreboard(
                 Spacer(modifier = Modifier.height(6.dp))
                 // Create a row label for each score type
                 for (valor in opcionesGenerala) {
-                    val fontSize = if (valor.length > 6) 24.sp else 32.sp
+                    val fontSize = 24.sp
                     Box(
                         modifier = Modifier
                             .width(90.dp)
@@ -212,8 +212,11 @@ fun GeneralaScoreboard(
                                 // Find the index of the current score in the options list to cycle through it
                                 val currentOptionIndex = scoreOptions.indexOf(currentScoreValue.toString()).coerceAtLeast(0)
 
-                                val displayedValue = if (existingScore == null) "-" else {
-                                    if(existingScore.score == -1) "x" else existingScore.score.toString()
+                                val displayedValue = when (existingScore?.score) {
+                                    null -> "-" // No score entry exists yet
+                                    0 -> "-"    // Score is 0, treat as unfilled
+                                    -1 -> "x"   // Score is -1, it's a crossed-out 'tacha'
+                                    else -> existingScore.score.toString() // Display the actual score number
                                 }
 
                                 val boxBackgroundColor = when {

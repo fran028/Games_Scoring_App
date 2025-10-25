@@ -66,7 +66,7 @@ fun PlayerAmountGrid(
 
     Column(
         modifier = modifier,
-        horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally,
+        horizontalAlignment = Alignment.CenterHorizontally,
     ){
         FlowRow(
             maxItemsInEachRow = maxPlayers,

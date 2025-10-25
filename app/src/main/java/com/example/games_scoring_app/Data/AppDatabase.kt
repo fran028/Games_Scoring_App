@@ -16,7 +16,7 @@ import kotlinx.coroutines.launch
 
 @Database(
     entities = [Players::class, Games::class, Scores::class, GameTypes::class, Settings::class, ScoreTypes::class],
-    version = 4,
+    version = 5,
     exportSchema = true,
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -120,27 +120,29 @@ abstract class AppDatabase : RoomDatabase() {
                 // Add your initial data here using your DAO
                 Log.d("AppDatabase", "Adding initial data to database...")
                 // Note: The insert function needs to return the ID to link the score types
-                val trucoId = gameTypesDao.insertGameType(GameTypes(name = "Truco", maxPlayers = 2, minPlayers = 2, maxScore = 30, type = "Cartas"))
-                val generalaId = gameTypesDao.insertGameType(GameTypes(name = "Generala", maxPlayers = 8, minPlayers = 1, maxScore = 370, type = "Dados"))
-                val pointsId = gameTypesDao.insertGameType(GameTypes(name = "Points", maxPlayers = 8, minPlayers = 2, maxScore = 1000, type = "Generico"))
-                val rankingId = gameTypesDao.insertGameType(GameTypes(name = "Ranking", maxPlayers = 8, minPlayers = 3, maxScore = 0, type = "Generico"))
-                val levelsId = gameTypesDao.insertGameType(GameTypes(name = "Levels", maxPlayers = 8, minPlayers = 1, maxScore = 0, type = "Generico"))
+                val trucoId = gameTypesDao.insertGameType(GameTypes(name = "Truco", description = "Juego de cartas popular en Argentina.", maxPlayers = 2, minPlayers = 2, maxScore = 30, type = "Cartas"))
+                val generalaId = gameTypesDao.insertGameType(GameTypes(name = "Generala", description = "Juego de dados, el objetivo es lograr las mejores combinaciones.", maxPlayers = 8, minPlayers = 1, maxScore = 370, type = "Dados"))
+                val pointsId = gameTypesDao.insertGameType(GameTypes(name = "Points", description = "Modo genérico para contar puntos hasta un objetivo.", maxPlayers = 8, minPlayers = 2, maxScore = 1000, type = "Generico"))
+                val rankingId = gameTypesDao.insertGameType(GameTypes(name = "Ranking", description = "Rankea el resultado de un juego o ronda.", maxPlayers = 8, minPlayers = 3, maxScore = 0, type = "Generico"))
+                val levelsId = gameTypesDao.insertGameType(GameTypes(name = "Levels", description = "Avanza a través de niveles o rondas, contando tu progreso.", maxPlayers = 8, minPlayers = 1, maxScore = 0, type = "Generico"))
+
 
                 // --- CHANGE 3: Populate the ScoreTypes table ---
                 Log.d("AppDatabase", "Populating ScoreTypes...")
                 scoreTypesDao.insertScoreType(ScoreTypes(id_game_type = trucoId.toInt(), name = "Final Score"))
 
                 // Generala Score Types
-                scoreTypesDao.insertScoreType(ScoreTypes(id_game_type = generalaId.toInt(), name = "Aces"))
-                scoreTypesDao.insertScoreType(ScoreTypes(id_game_type = generalaId.toInt(), name = "Twos"))
-                scoreTypesDao.insertScoreType(ScoreTypes(id_game_type = generalaId.toInt(), name = "Threes"))
-                scoreTypesDao.insertScoreType(ScoreTypes(id_game_type = generalaId.toInt(), name = "Fours"))
-                scoreTypesDao.insertScoreType(ScoreTypes(id_game_type = generalaId.toInt(), name = "Fives"))
-                scoreTypesDao.insertScoreType(ScoreTypes(id_game_type = generalaId.toInt(), name = "Sixes"))
-                scoreTypesDao.insertScoreType(ScoreTypes(id_game_type = generalaId.toInt(), name = "Straight"))
-                scoreTypesDao.insertScoreType(ScoreTypes(id_game_type = generalaId.toInt(), name = "Full House"))
+                scoreTypesDao.insertScoreType(ScoreTypes(id_game_type = generalaId.toInt(), name = "1"))
+                scoreTypesDao.insertScoreType(ScoreTypes(id_game_type = generalaId.toInt(), name = "2"))
+                scoreTypesDao.insertScoreType(ScoreTypes(id_game_type = generalaId.toInt(), name = "3"))
+                scoreTypesDao.insertScoreType(ScoreTypes(id_game_type = generalaId.toInt(), name = "4"))
+                scoreTypesDao.insertScoreType(ScoreTypes(id_game_type = generalaId.toInt(), name = "5"))
+                scoreTypesDao.insertScoreType(ScoreTypes(id_game_type = generalaId.toInt(), name = "6"))
+                scoreTypesDao.insertScoreType(ScoreTypes(id_game_type = generalaId.toInt(), name = "Escalera"))
+                scoreTypesDao.insertScoreType(ScoreTypes(id_game_type = generalaId.toInt(), name = "Full"))
                 scoreTypesDao.insertScoreType(ScoreTypes(id_game_type = generalaId.toInt(), name = "Poker"))
                 scoreTypesDao.insertScoreType(ScoreTypes(id_game_type = generalaId.toInt(), name = "Generala"))
+                scoreTypesDao.insertScoreType(ScoreTypes(id_game_type = generalaId.toInt(), name = "Generala x2"))
 
                 // Generic Score Types
                 scoreTypesDao.insertScoreType(ScoreTypes(id_game_type = pointsId.toInt(), name = "Final Score"))
