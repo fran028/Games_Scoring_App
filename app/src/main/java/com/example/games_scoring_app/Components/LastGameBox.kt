@@ -32,7 +32,7 @@ import com.example.games_scoring_app.Theme.LeagueGothic
 import com.example.games_scoring_app.Theme.RobotoCondensed
 
 @Composable
-fun ScoreBoardBox(
+fun LastGameBox(
     onClick: () -> Unit,
     title: String,
     description: String,
@@ -42,8 +42,6 @@ fun ScoreBoardBox(
     width: Dp = 0.dp,
     icon: Int,
     gameType: String = "",
-    showStats: Boolean = true,
-    timesPlayed: Int,
     daysSinceLastPlayed: String
 ) {
 
@@ -114,55 +112,33 @@ fun ScoreBoardBox(
                 }
             }
         }
-        if(showStats) {
-            Spacer(modifier = Modifier.width(8.dp))
-            Column(
-                // Removed horizontalAlignment
-                verticalArrangement = Arrangement.spacedBy(6.dp),
+        Spacer(modifier = Modifier.width(8.dp))
+        Column(
+            // Removed horizontalAlignment
+            verticalArrangement = Arrangement.spacedBy(6.dp),
+            modifier = Modifier
+                .fillMaxHeight()
+                .width(100.dp) // Set a fixed width for the stats column
+        ) {
+            Box(
                 modifier = Modifier
-                    .fillMaxHeight()
-                    .width(100.dp) // Set a fixed width for the stats column
+                    .background(accentColor, shape = RoundedCornerShape(10.dp))
+                    .clip(RoundedCornerShape(10.dp))
+                    .padding(horizontal = 12.dp, vertical = 4.dp)
+                    .weight(1f)
+                    .fillMaxWidth(), // Make the box fill the column's width
+                contentAlignment = Alignment.Center // Center the stats column vertically and horizontally
             ) {
-                Box(
-                    modifier = Modifier
-                        .background(accentColor, shape = RoundedCornerShape(10.dp))
-                        .clip(RoundedCornerShape(10.dp))
-                        .padding(horizontal = 12.dp, vertical = 4.dp)
-                        .weight(1f)
-                        .fillMaxWidth(), // Make the box fill the column's width
-                    contentAlignment = Alignment.Center // Center the stats column vertically and horizontally
-                ) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(
-                            text = "Partidas $timesPlayed",
-                            style = TextStyle(
-                                fontFamily = RobotoCondensed,
-                                color = bgcolor,
-                                fontSize = 16.sp
-                            )
-                        )
-                    }
-                }
-                Box(
-                    modifier = Modifier
-                        .background(accentColor, shape = RoundedCornerShape(10.dp))
-                        .clip(RoundedCornerShape(10.dp))
-                        .padding(horizontal = 12.dp, vertical = 4.dp)
-                        .weight(1f)
-                        .fillMaxWidth(), // Make the box fill the column's width
-                    contentAlignment = Alignment.Center // Center the stats column vertically and horizontally
-                ) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(
-                            text = daysSinceLastPlayed,
-                            style = TextStyle(
-                                fontFamily = RobotoCondensed,
-                                color = bgcolor,
-                                fontSize = 16.sp
-                            ),
-                            textAlign = TextAlign.Center
-                        )
-                    }
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(
+                        text = daysSinceLastPlayed,
+                        style = TextStyle(
+                            fontFamily = RobotoCondensed,
+                            color = bgcolor,
+                            fontSize = 16.sp
+                        ),
+                        textAlign = TextAlign.Center
+                    )
                 }
             }
         }

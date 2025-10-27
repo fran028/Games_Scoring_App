@@ -5,15 +5,12 @@ import androidx.compose.ui.graphics.Color
 
 sealed class Screen(val route: String) {
     object Home : Screen("Home")
-    object Game : Screen("Game/{gameId}/{gameTypeId}/{playerNames}"){
+    object Game : Screen("Game/{gameId}/{gameTypeId}"){
         fun createRoute(
             gameId: Int,
-            gameTypeId: Int,
-            playerNames: Array<String>
+            gameTypeId: Int
         ): String {
-            val playerNamesString = playerNames.joinToString(separator = "‚‗‚") // Using a less common separator
-            val encodedPlayerNames = Uri.encode(playerNamesString)
-            return "Game/$gameId/$gameTypeId/$encodedPlayerNames"
+            return "Game/$gameId/$gameTypeId"
         }
     }
     object SetUp : Screen("SetUp/{gameType}/{gameColor}"){

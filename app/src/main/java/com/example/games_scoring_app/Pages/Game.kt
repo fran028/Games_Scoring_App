@@ -52,7 +52,7 @@ import kotlin.collections.toTypedArray
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun GamePage(navController: NavController, gameId: Int, gameTypeId: Int, playerNames: Array<String> ) {
+fun GamePage(navController: NavController, gameId: Int, gameTypeId: Int ) {
     if(gameTypeId == 0) {
         Log.d("GamePage", "Navigating to Home screen")
         navController.navigate(Screen.Home.route)
@@ -177,7 +177,7 @@ fun GamePage(navController: NavController, gameId: Int, gameTypeId: Int, playerN
                             Log.d(TAG, "Created new game with ID: $newGameId")
 
                             // 3. Navigate to the new game screen and remove the old one from the back stack
-                            navController.navigate(Screen.Game.createRoute(newGameId.toInt(), gameTypeId, newPlayerNames)) {
+                            navController.navigate(Screen.Game.createRoute(newGameId.toInt(), gameTypeId)) {
                                 popUpTo(Screen.Game.route) { inclusive = true }
                             }
                         }

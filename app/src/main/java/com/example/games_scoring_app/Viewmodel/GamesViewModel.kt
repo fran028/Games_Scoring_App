@@ -7,11 +7,13 @@ import androidx.annotation.RequiresApi
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.games_scoring_app.Data.GameStats
+import com.example.games_scoring_app.Data.GameWithPlayers
 import com.example.games_scoring_app.Data.Games
 import com.example.games_scoring_app.Data.GamesRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
@@ -31,6 +33,19 @@ class GamesViewModel(private val gamesRepository: GamesRepository) : ViewModel()
             val games = gamesRepository.getLastGame() // Use the repository method
             withContext(Dispatchers.Main) {
                 _lastGame.value = games
+            }
+        }
+    }
+
+    // --- NEW: StateFlow to hold games with players ---
+    private val _allGamesWithPlayers = MutableStateFlow<List<GameWithPlayers>>(emptyList())
+    val allGamesWithPlayers: StateFlow<List<GameWithPlayers>> = _allGamesWithPlayers.asStateFlow()
+
+    // --- NEW: Function to fetch all games with their players ---
+    fun getAllGamesWithPlayers() {
+        viewModelScope.launch {
+            gamesRepository.getAllGamesWithPlayers().collect { gamesList ->
+                _allGamesWithPlayers.value = gamesList
             }
         }
     }

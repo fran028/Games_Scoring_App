@@ -5,7 +5,9 @@ import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Transaction
 import androidx.room.Update
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface GamesDao {
@@ -24,7 +26,12 @@ interface GamesDao {
     @Query("SELECT * FROM games")
     fun getAllGames(): List<Games>
 
-    @Query("SELECT * FROM games ORDER BY date, id DESC LIMIT 1")
+    @Transaction
+    @Query("SELECT * FROM games ORDER BY id DESC")
+    fun getAllGamesWithPlayers(): Flow<List<GameWithPlayers>>
+
+    // Sort by the auto-incrementing ID in descending order to get the most recent entry.
+    @Query("SELECT * FROM games ORDER BY id DESC LIMIT 1")
     fun getLastGame(): Games?
 
     @Query("SELECT * FROM games WHERE id = :id")
@@ -38,3 +45,4 @@ interface GamesDao {
     @Query("SELECT date FROM games WHERE id_GameType = :gameTypeId ORDER BY id DESC LIMIT 1")
     suspend fun getLastPlayedDateByGameType(gameTypeId: Int): String?
 }
+

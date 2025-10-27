@@ -389,14 +389,10 @@ fun SetupPage(navController: NavController, gameType: Int, gameColor: Color) {
                                         Log.d(TAG, "Initial score created for player $newPlayerId for score type '${scoreType.name}'")
                                     }
                                 }
-
-                                // 4. Navigate to the game screen using only the new game's ID.
-                                val playerNamesArray = names.take(selectedPlayerCount).toTypedArray()
                                 navController.navigate(
                                     Screen.Game.createRoute(
                                         gameId = gameId.toInt(),
-                                        gameTypeId = thisGameType.value.id,
-                                        playerNames = playerNamesArray
+                                        gameTypeId = thisGameType.value.id
                                     )
                                 )
                             }

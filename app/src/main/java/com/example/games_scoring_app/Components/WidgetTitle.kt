@@ -104,11 +104,11 @@ fun WidgetTitle(title: String, image: Int, navController: NavController) {
 
                     )*/
                     Image(
-                        painter = painterResource(id = R.drawable.setting_line),
-                        contentDescription = "App Image",
+                        painter = painterResource(id = R.drawable.scoreboard_white),
+                        contentDescription = "Games List Icon",
                         modifier = Modifier.size(55.dp)
                             .clickable {
-                                navController.navigate(Screen.Settings.route)
+                                navController.navigate(Screen.SavedGames.route)
                             }
                     )
                 }

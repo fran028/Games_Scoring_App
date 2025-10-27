@@ -1,5 +1,7 @@
 package com.example.games_scoring_app.Components
 
+import com.example.games_scoring_app.Data.Players
+import com.example.games_scoring_app.Theme.gold
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -32,19 +34,17 @@ import com.example.games_scoring_app.Theme.LeagueGothic
 import com.example.games_scoring_app.Theme.RobotoCondensed
 
 @Composable
-fun ScoreBoardBox(
+fun GameBox(
     onClick: () -> Unit,
     title: String,
-    description: String,
     bgcolor: Color,
     textcolor: Color,
     accentColor: Color,
     width: Dp = 0.dp,
     icon: Int,
     gameType: String = "",
-    showStats: Boolean = true,
-    timesPlayed: Int,
-    daysSinceLastPlayed: String
+    daysSinceLastPlayed: String,
+    players: List<Players>
 ) {
 
 
@@ -100,69 +100,55 @@ fun ScoreBoardBox(
                     )
 
                 }
-
-                if (description.isNotBlank()) {
-                    Text(
-                        text = description,
-                        style = TextStyle(
-                            fontFamily = RobotoCondensed,
-                            color = textcolor,
-                            fontSize = 16.sp,
-                        ),
-                        textAlign = TextAlign.Start
-                    )
+                Row(
+                    verticalAlignment = Alignment.Top,
+                    horizontalArrangement = Arrangement.Start,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    if (!players.isEmpty()) {
+                        for (player in players) {
+                            Text(
+                                text = player.name,
+                                style = TextStyle(
+                                    fontFamily = RobotoCondensed,
+                                    color = if (player.won) gold else textcolor,
+                                    fontSize = 16.sp,
+                                ),
+                                textAlign = TextAlign.Start
+                            )
+                            Spacer(modifier = Modifier.size(2.dp))
+                        }
+                    }
                 }
             }
         }
-        if(showStats) {
-            Spacer(modifier = Modifier.width(8.dp))
-            Column(
-                // Removed horizontalAlignment
-                verticalArrangement = Arrangement.spacedBy(6.dp),
+        Spacer(modifier = Modifier.width(8.dp))
+        Column(
+            // Removed horizontalAlignment
+            verticalArrangement = Arrangement.spacedBy(6.dp),
+            modifier = Modifier
+                .fillMaxHeight()
+                .width(100.dp) // Set a fixed width for the stats column
+        ) {
+            Box(
                 modifier = Modifier
-                    .fillMaxHeight()
-                    .width(100.dp) // Set a fixed width for the stats column
+                    .background(accentColor, shape = RoundedCornerShape(10.dp))
+                    .clip(RoundedCornerShape(10.dp))
+                    .padding(horizontal = 12.dp, vertical = 4.dp)
+                    .weight(1f)
+                    .fillMaxWidth(), // Make the box fill the column's width
+                contentAlignment = Alignment.Center // Center the stats column vertically and horizontally
             ) {
-                Box(
-                    modifier = Modifier
-                        .background(accentColor, shape = RoundedCornerShape(10.dp))
-                        .clip(RoundedCornerShape(10.dp))
-                        .padding(horizontal = 12.dp, vertical = 4.dp)
-                        .weight(1f)
-                        .fillMaxWidth(), // Make the box fill the column's width
-                    contentAlignment = Alignment.Center // Center the stats column vertically and horizontally
-                ) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(
-                            text = "Partidas $timesPlayed",
-                            style = TextStyle(
-                                fontFamily = RobotoCondensed,
-                                color = bgcolor,
-                                fontSize = 16.sp
-                            )
-                        )
-                    }
-                }
-                Box(
-                    modifier = Modifier
-                        .background(accentColor, shape = RoundedCornerShape(10.dp))
-                        .clip(RoundedCornerShape(10.dp))
-                        .padding(horizontal = 12.dp, vertical = 4.dp)
-                        .weight(1f)
-                        .fillMaxWidth(), // Make the box fill the column's width
-                    contentAlignment = Alignment.Center // Center the stats column vertically and horizontally
-                ) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(
-                            text = daysSinceLastPlayed,
-                            style = TextStyle(
-                                fontFamily = RobotoCondensed,
-                                color = bgcolor,
-                                fontSize = 16.sp
-                            ),
-                            textAlign = TextAlign.Center
-                        )
-                    }
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(
+                        text = daysSinceLastPlayed,
+                        style = TextStyle(
+                            fontFamily = RobotoCondensed,
+                            color = bgcolor,
+                            fontSize = 16.sp
+                        ),
+                        textAlign = TextAlign.Center
+                    )
                 }
             }
         }

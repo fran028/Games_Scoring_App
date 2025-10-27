@@ -36,6 +36,7 @@ import androidx.navigation.NavController
 import com.example.games_scoring_app.Components.ButtonDateBar
 import com.example.games_scoring_app.Components.ButtonBar
 import com.example.games_scoring_app.Components.IconButtonBar
+import com.example.games_scoring_app.Components.LastGameBox
 import com.example.games_scoring_app.R
 import com.example.games_scoring_app.Components.PageTitle
 import com.example.games_scoring_app.Components.ScoreBoardBox
@@ -90,15 +91,26 @@ fun HomePage(navController: NavController) {
     val settingsViewModel: SettingsViewModel = viewModel(factory = settingsViewModelFactory)
 
     val themeMode by settingsViewModel.themeMode.collectAsState()
-    //val lastGame by gamesViewModel.lastGame.collectAsState()
+    val lastGame by gamesViewModel.lastGame.collectAsState()
     val gameTypes by gameTypesViewModel.allGameTypes.collectAsState()
     val gameStats by gamesViewModel.gameStats.collectAsState()
+    var lastGameTypeName by remember { mutableStateOf("") }
     var lastGameType by remember { mutableStateOf("") }
+
     LaunchedEffect(key1 = Unit) {
-        //gamesViewModel.getLastGame()
+        gamesViewModel.getLastGame()
         gameTypesViewModel.getAllGameTypes()
         settingsViewModel.getThemeMode()
     }
+
+    LaunchedEffect(key1 = lastGame, key2 = gameTypes) {
+        lastGame?.let { game ->
+            // Find the game type name from the list
+            lastGameTypeName = gameTypes.find { it?.id == game.id_GameType }?.name ?: ""
+            lastGameType = gameTypes.find { it?.id == game.id_GameType }?.type ?: ""
+        }
+    }
+
 
     LaunchedEffect(key1 = gameTypes) {
         gameTypes.forEach { gameType ->
@@ -124,54 +136,74 @@ fun HomePage(navController: NavController) {
     ) {
         Spacer(modifier = Modifier.height(64.dp))
         WidgetTitle(appName.uppercase(), R.drawable.game_topview, navController);
+        if(lastGame != null) {
 
-        /*Spacer(modifier = Modifier.height(20.dp))
+            Spacer(modifier = Modifier.height(20.dp))
+
+            Text(
+                text = "Last Game",
+                fontFamily = RobotoCondensed,
+                fontSize = 36.sp,
+                color = fontColor,
+                modifier = Modifier
+                    .padding(horizontal = 16.dp)
+                    .fillMaxWidth()
+                    .align(Alignment.CenterHorizontally),
+                textAlign = TextAlign.Left
+            )
+            Spacer(modifier = Modifier.height(10.dp))
+            Column (Modifier.padding(horizontal = 16.dp )) {
+                lastGame?.let { game ->
+                    var buttonIconId = 0
+                    var accentColor = yellow
+                    Log.d("HomePage", "Last game type name: $lastGameType")
+                    when (lastGameType) {
+                        "Dados" -> {
+                            buttonIconId = R.drawable.dices
+                            accentColor = blue
+                        }
+                        "Cartas" -> {
+                            buttonIconId = R.drawable.card
+                            accentColor = yellow
+                        }
+                        "Generico" -> {
+                            buttonIconId = R.drawable.paper
+                            accentColor = green
+                        }
+                        else -> {
+                            buttonIconId = R.drawable.paper
+                            accentColor = white
+                        }
+                    }
+                    LastGameBox(
+                        title = lastGameTypeName.uppercase(),
+                        description = "",
+                        bgcolor = darkgray,
+                        accentColor = accentColor,
+                        textcolor = buttonColor,
+                        onClick = {
+                            Log.d("HomePage", "Last game clicked: $game")
+                            navController.navigate( Screen.Game.createRoute( game.id, game.id_GameType ) )
+                        },
+                        icon = buttonIconId,
+                        daysSinceLastPlayed = game.date
+                    )
+                }
+            }
+        }
+        Spacer(modifier = Modifier.height(20.dp))
         Text(
-            text = "LAST GAME PLAYED",
-            fontFamily = LeagueGothic,
-            fontSize = 48.sp,
-            color = white,
+            text = "Scoreboards",
+            fontFamily = RobotoCondensed,
+            fontSize = 36.sp,
+            color = fontColor,
             modifier = Modifier
-                .padding(horizontal = 32.dp)
+                .padding(horizontal = 16.dp)
                 .fillMaxWidth()
                 .align(Alignment.CenterHorizontally),
             textAlign = TextAlign.Left
         )
-        Spacer(modifier = Modifier.height(20.dp))
-        Column (Modifier.padding(horizontal = 30.dp )) {
-            if (lastGame!= null){
-                ButtonDateBar(
-                    text = lastGameType.uppercase(),
-                    onClick = { navController.navigate(Screen.Game.createRoute(lastGame!!.id,true, lastGame!!.id_GameType)) },
-                    bgcolor = blue,
-                    height = 50.dp,
-                    textcolor = black,
-                    value = "${lastGame?.date}"
-                )
-            } else {
-                ButtonDateBar(
-                    text = "NO GAME",
-                    bgcolor = white,
-                    height = 64.dp,
-                    textcolor = black,
-                    value = "00/00/00",
-                    onClick = {  }
-                )
-            }
-        }*/
-        Spacer(modifier = Modifier.height(20.dp))
-//        Text(
-//            text = "Scoreboards",
-//            fontFamily = RobotoCondensed,
-//            fontSize = 36.sp,
-//            color = fontColor,
-//            modifier = Modifier
-//                .padding(horizontal = 32.dp)
-//                .fillMaxWidth()
-//                .align(Alignment.CenterHorizontally),
-//            textAlign = TextAlign.Left
-//        )
-        Spacer(modifier = Modifier.height(20.dp))
+        Spacer(modifier = Modifier.height(10.dp))
         Column (Modifier.padding(horizontal = 16.dp )) {
             if (gameTypes.isNotEmpty()) {
                 for (gameType in gameTypes) {

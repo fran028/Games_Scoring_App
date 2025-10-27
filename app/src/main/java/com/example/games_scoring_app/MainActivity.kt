@@ -159,32 +159,20 @@ fun MainScreen() {
                 composable(
                     route = Screen.Game.route,
                     arguments = listOf(
-                        // ADDED: Define the gameId argument
                         navArgument("gameId") { type = NavType.IntType },
-                        navArgument("gameTypeId") { type = NavType.IntType },
-                        navArgument("playerNames") { type = NavType.StringType }
+                        navArgument("gameTypeId") { type = NavType.IntType }
                     )
                 ) { backStackEntry ->
                     // ADDED: Extract the gameId from the backStackEntry
                     val gameId = backStackEntry.arguments?.getInt("gameId") ?: 0
                     val gameTypeId = backStackEntry.arguments?.getInt("gameTypeId") ?: 0
-                    val encodedPlayerNamesString = backStackEntry.arguments?.getString("playerNames")
-
-                    val playerNames: Array<String>? = encodedPlayerNamesString?.let {
-                        val decodedNames = Uri.decode(it) // Decode the string
-                        decodedNames.split("‚‗‚").toTypedArray() // Split by your chosen separator
-                    }
-
-                    // Ensure playerNames is not null before proceeding
-                    if (playerNames != null) {
-                        GamePage(
-                            navController = navController,
-                            // ADDED: Pass the extracted gameId to the composable
-                            gameId = gameId,
-                            gameTypeId = gameTypeId,
-                            playerNames = playerNames
-                        )
-                    }
+                    
+                    GamePage(
+                        navController = navController,
+                        // ADDED: Pass the extracted gameId to the composable
+                        gameId = gameId,
+                        gameTypeId = gameTypeId
+                    )
                 }
                 composable(
                     route = Screen.SetUp.route,

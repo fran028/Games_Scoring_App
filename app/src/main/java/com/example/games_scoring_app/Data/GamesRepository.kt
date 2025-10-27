@@ -1,5 +1,7 @@
 package com.example.games_scoring_app.Data
 
+import kotlinx.coroutines.flow.Flow
+
 class GamesRepository(private val gamesDao: GamesDao) {
     fun insertGame(game: Games) {
         gamesDao.insertGame(game)
@@ -20,6 +22,11 @@ class GamesRepository(private val gamesDao: GamesDao) {
 
     fun getAllGames(): List<Games> {
         return gamesDao.getAllGames()
+    }
+
+    // This is the new function to get all games with their players
+    fun getAllGamesWithPlayers(): Flow<List<GameWithPlayers>> {
+        return gamesDao.getAllGamesWithPlayers()
     }
 
     fun getLastGame(): Games? {
