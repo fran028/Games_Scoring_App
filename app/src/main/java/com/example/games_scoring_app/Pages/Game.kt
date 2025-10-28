@@ -2,6 +2,8 @@ package com.example.games_scoring_app.Pages
 
 import android.os.Build
 import android.util.Log
+import android.widget.Toast // <-- ADD THIS IMPORT
+import androidx.activity.compose.BackHandler // <-- ADD THIS IMPORT
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -20,6 +22,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -102,6 +105,24 @@ fun GamePage(navController: NavController, gameId: Int, gameTypeId: Int ) {
     val scoreTypes by scoreTypesViewModel.scoreTypesForGame.collectAsState()
     val themeMode by settingsViewModel.themeMode.collectAsState()
 
+    // --- ADDED: Logic for "Press back again to exit" ---
+    var backPressTime by remember { mutableStateOf(0L) }
+    val toastMessage = "Press back again to exit"
+
+    BackHandler(enabled = true) {
+        val currentTime = System.currentTimeMillis()
+        if (currentTime - backPressTime < 2000) { // If pressed within 2 seconds
+            // Navigate to Home and clear the back stack
+            navController.navigate(Screen.Home.route) {
+                popUpTo(0) // Clears the entire back stack
+            }
+        } else {
+            backPressTime = currentTime
+            Toast.makeText(context, toastMessage, Toast.LENGTH_SHORT).show()
+        }
+    }
+    // --- End of added logic ---
+
     Log.d(TAG, "Variables initialized")
 
     // --- Effects ---
@@ -114,7 +135,6 @@ fun GamePage(navController: NavController, gameId: Int, gameTypeId: Int ) {
         Log.d(TAG, "LaunchedEffect finished")
     }
 
-    // FIX: Lambdas to handle adding a NEW score or UPDATING an existing one.
     val onAddScore: (Scores) -> Unit = { newScore ->
         coroutineScope.launch {
             scoresViewModel.addNewScore(newScore)
@@ -127,6 +147,14 @@ fun GamePage(navController: NavController, gameId: Int, gameTypeId: Int ) {
             Log.d(TAG, "Updating score for Player ID: ${scoreToUpdate.id_player}, New Score: ${scoreToUpdate.score}")
         }
     }
+    // --- FIX: Wrap the ViewModel call in a coroutine ---
+    val onDeleteScore: (Scores) -> Unit = { scoreToDelete ->
+        coroutineScope.launch { // This moves the operation to a background thread
+            scoresViewModel.deleteScore(scoreToDelete)
+        }
+    }
+
+
 
     val titelImage = remember(gameType?.name) { // Update image when gameType changes
         when (gameType?.name) {
@@ -196,7 +224,16 @@ fun GamePage(navController: NavController, gameId: Int, gameTypeId: Int ) {
                         TrucoScoreboard(playersWithScores, scoreTypes, gameType!!.maxScore, themeMode, onAddScore, onUpdateScore)
                     }
                     "Points" -> {
-                        PuntosScoreboard(playersWithScores, scoreTypes, gameType!!.maxScore, themeMode, onAddScore, onUpdateScore)
+                        // --- MODIFIED: Pass the onDeleteScore lambda ---
+                        PuntosScoreboard(
+                            playersWithScores = playersWithScores,
+                            scoreTypes = scoreTypes,
+                            maxScore = gameType!!.maxScore,
+                            themeMode = themeMode,
+                            onAddScore = onAddScore,
+                            onUpdateScore = onUpdateScore,
+                            onDeleteScore = onDeleteScore // <-- Pass the new function here
+                        )
                     }
                     "Ranking" -> {
                         RankingScoreboard(playersWithScores, scoreTypes, themeMode, onAddScore, onUpdateScore)

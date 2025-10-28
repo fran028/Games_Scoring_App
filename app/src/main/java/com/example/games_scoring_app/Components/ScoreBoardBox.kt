@@ -28,8 +28,11 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.games_scoring_app.R
 import com.example.games_scoring_app.Theme.LeagueGothic
 import com.example.games_scoring_app.Theme.RobotoCondensed
+import com.example.games_scoring_app.Theme.darkgray
+import com.example.games_scoring_app.Theme.red
 
 @Composable
 fun ScoreBoardBox(
@@ -125,7 +128,7 @@ fun ScoreBoardBox(
             ) {
                 Box(
                     modifier = Modifier
-                        .background(accentColor, shape = RoundedCornerShape(10.dp))
+                        .background(darkgray, shape = RoundedCornerShape(10.dp))
                         .clip(RoundedCornerShape(10.dp))
                         .padding(horizontal = 12.dp, vertical = 4.dp)
                         .weight(1f)
@@ -137,7 +140,7 @@ fun ScoreBoardBox(
                             text = "Partidas $timesPlayed",
                             style = TextStyle(
                                 fontFamily = RobotoCondensed,
-                                color = bgcolor,
+                                color = accentColor,
                                 fontSize = 16.sp
                             )
                         )
@@ -145,7 +148,7 @@ fun ScoreBoardBox(
                 }
                 Box(
                     modifier = Modifier
-                        .background(accentColor, shape = RoundedCornerShape(10.dp))
+                        .background(darkgray, shape = RoundedCornerShape(10.dp))
                         .clip(RoundedCornerShape(10.dp))
                         .padding(horizontal = 12.dp, vertical = 4.dp)
                         .weight(1f)
@@ -157,12 +160,38 @@ fun ScoreBoardBox(
                             text = daysSinceLastPlayed,
                             style = TextStyle(
                                 fontFamily = RobotoCondensed,
-                                color = bgcolor,
+                                color = accentColor,
                                 fontSize = 16.sp
                             ),
                             textAlign = TextAlign.Center
                         )
                     }
+                }
+            }
+        }
+        Spacer(modifier = Modifier.width(8.dp))
+        Column(
+            // Removed horizontalAlignment
+            verticalArrangement = Arrangement.spacedBy(6.dp),
+            modifier = Modifier
+                .fillMaxHeight()
+                .width(50.dp)
+        ) {
+            Box(
+                modifier = Modifier
+                    .background(accentColor, shape = RoundedCornerShape(10.dp))
+                    .clip(RoundedCornerShape(10.dp))
+                    .padding(horizontal = 12.dp, vertical = 4.dp)
+                    .weight(1f)
+                    .fillMaxWidth(), // Make the box fill the column's width
+                contentAlignment = Alignment.Center // Center the stats column vertically and horizontally
+            ) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Image(
+                        painter = painterResource(id = R.drawable.play), // Assuming you have a delete icon
+                        contentDescription = "play Game",
+                        modifier = Modifier.size(32.dp)
+                    )
                 }
             }
         }

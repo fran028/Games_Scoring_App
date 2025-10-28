@@ -16,9 +16,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldDefaults
@@ -30,6 +32,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -39,9 +42,11 @@ import com.example.games_scoring_app.Data.ScoreTypes
 import com.example.games_scoring_app.Data.Scores
 import com.example.games_scoring_app.Theme.LeagueGothic
 import com.example.games_scoring_app.Theme.black
+import com.example.games_scoring_app.Theme.blue
 import com.example.games_scoring_app.Theme.green
 import com.example.games_scoring_app.Theme.red
 import com.example.games_scoring_app.Theme.white
+import com.example.games_scoring_app.Theme.yellow
 
 @Composable
 fun PuntosScoreboard(
@@ -50,7 +55,9 @@ fun PuntosScoreboard(
     maxScore: Int,
     themeMode: Int,
     onAddScore: (Scores) -> Unit,
-    onUpdateScore: (Scores) -> Unit // Included for consistency, but may not be used
+    onUpdateScore: (Scores) -> Unit,
+    // --- NEW: Add lambda for deleting a score ---
+    onDeleteScore: (Scores) -> Unit
 ) {
     val TAG = "PuntosScoreboard"
     Log.d(TAG, "PuntosScoreboard called")
@@ -60,7 +67,6 @@ fun PuntosScoreboard(
     val buttonColor = if (themeMode == 0) white else black
     val buttonFontColor = if (themeMode == 0) black else white
 
-    // Find the relevant ScoreType for "Points", which is usually one "Final Score".
     val finalScoreType = scoreTypes.find { it.name == "Final Score" }
 
     if (playersWithScores.isEmpty() || finalScoreType == null) {
@@ -86,28 +92,61 @@ fun PuntosScoreboard(
         val maxWidth = (372 / playersWithScores.size - 6.4 * (playersWithScores.size - 1)).dp
         val width = if (maxWidth < minWidth) minWidth else maxWidth
 
-        var showPopup by remember { mutableStateOf(false) }
+        var showAddPopup by remember { mutableStateOf(false) }
+        var showEditPopup by remember { mutableStateOf(false) }
         var selectedPlayer by remember { mutableStateOf<PlayerWithScores?>(null) }
+        var selectedScore by remember { mutableStateOf<Scores?>(null) }
         var inputValue by remember { mutableStateOf("") }
 
-        if (showPopup && selectedPlayer != null) {
-            AddScorePopup(
-                onDismiss = { showPopup = false },
+        // --- Popup for Adding a new score ---
+        if (showAddPopup && selectedPlayer != null) {
+            ScorePopup(
+                isEditMode = false,
+                onDismiss = { showAddPopup = false },
                 onConfirm = {
-                    val score = inputValue.toIntOrNull()
-                    if (score != null) {
-                        Log.d(TAG, "Score: $score")
-                        // Create a new Score object to be added to the database
+                    val scoreValue = inputValue.toIntOrNull()
+                    if (scoreValue != null) {
+                        Log.d(TAG, "Adding score: $scoreValue")
                         val newScore = Scores(
                             id_player = selectedPlayer!!.player.id,
                             id_score_type = finalScoreType.id,
-                            score = score,
-                            isFinalScore = false // These are individual entries, not a final total
+                            score = scoreValue,
+                            isFinalScore = false
                         )
-                        // Call the lambda to trigger the ViewModel to save the score
                         onAddScore(newScore)
                     }
-                    showPopup = false
+                    showAddPopup = false
+                    inputValue = ""
+                },
+                onDelete = {}, // Not used in add mode
+                inputValue = inputValue,
+                onInputValueChange = { inputValue = it },
+                playername = selectedPlayer!!.player.name,
+                buttonColor = buttonColor,
+                buttonFontColor = buttonFontColor
+            )
+        }
+
+        // --- NEW: Popup for Editing/Deleting an existing score ---
+        if (showEditPopup && selectedPlayer != null && selectedScore != null) {
+            ScorePopup(
+                isEditMode = true,
+                onDismiss = { showEditPopup = false },
+                onConfirm = {
+                    val scoreValue = inputValue.toIntOrNull()
+                    if (scoreValue != null) {
+                        Log.d(TAG, "Updating score to: $scoreValue")
+                        // Create a copy of the selected score with the updated value
+                        val updatedScore = selectedScore!!.copy(score = scoreValue)
+                        onUpdateScore(updatedScore)
+                    }
+                    showEditPopup = false
+                    inputValue = ""
+                },
+                onDelete = {
+                    Log.d(TAG, "Deleting score")
+                    onDeleteScore(selectedScore!!)
+                    showEditPopup = false
                     inputValue = ""
                 },
                 inputValue = inputValue,
@@ -137,12 +176,19 @@ fun PuntosScoreboard(
                     val playerName = if (playersWithScores.size > 2) playerWithScores.player.name.take(2) else playerWithScores.player.name
                     PlayerPuntosColumn(
                         playerName = playerName,
-                        scores = playerWithScores.scores, // Pass the list of Score objects directly
+                        scores = playerWithScores.scores,
                         maxScore = maxScore,
                         width = width,
                         onAddScoreClicked = {
                             selectedPlayer = playerWithScores
-                            showPopup = true
+                            showAddPopup = true
+                        },
+                        // --- NEW: Handle score clicks ---
+                        onScoreClicked = { score ->
+                            selectedPlayer = playerWithScores
+                            selectedScore = score
+                            inputValue = score.score.toString() // Pre-fill the input
+                            showEditPopup = true
                         },
                         buttonColor = buttonColor,
                         buttonFontColor = buttonFontColor,
@@ -158,20 +204,22 @@ fun PuntosScoreboard(
 @Composable
 private fun PlayerPuntosColumn(
     playerName: String,
-    scores: List<Scores>, // Changed type to list of Score objects
+    scores: List<Scores>,
     maxScore: Int,
     width: Dp,
     onAddScoreClicked: () -> Unit,
+    // --- NEW: Lambda to handle score clicks ---
+    onScoreClicked: (Scores) -> Unit,
     buttonColor: Color,
     buttonFontColor: Color,
     fontColor: Color
 ) {
-    val totalScore = TotalScore(scores)
+    val totalScore = scores.sumOf { it.score }
     val scrollState = rememberScrollState()
 
     Column(
         modifier = Modifier
-            .height(500.dp) // Give the column a fixed height to make it scrollable
+            .height(500.dp)
             .width(width)
             .padding(0.dp),
         verticalArrangement = Arrangement.Top,
@@ -198,7 +246,6 @@ private fun PlayerPuntosColumn(
         }
         Spacer(modifier = Modifier.height(6.dp))
 
-        // This inner column will contain the scrollable scores
         Column(modifier = Modifier.weight(1f).verticalScroll(scrollState)) {
             scores.forEach { score ->
                 Text(
@@ -207,14 +254,16 @@ private fun PlayerPuntosColumn(
                     fontSize = 36.sp,
                     color = fontColor,
                     textAlign = TextAlign.Center,
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        // --- NEW: Make each score clickable ---
+                        .clickable { onScoreClicked(score) }
                 )
                 Spacer(modifier = Modifier.height(6.dp))
             }
         }
 
         Spacer(modifier = Modifier.height(6.dp))
-        // Total score and add button are outside the scrollable area
         Text(
             text = totalScore.toString(),
             fontFamily = LeagueGothic,
@@ -244,19 +293,25 @@ private fun PlayerPuntosColumn(
     }
 }
 
+// --- RENAMED and MODIFIED to handle both Add and Edit/Delete modes ---
 @Composable
-private fun AddScorePopup(
+private fun ScorePopup(
+    isEditMode: Boolean,
     onDismiss: () -> Unit,
     onConfirm: () -> Unit,
+    onDelete: () -> Unit,
     inputValue: String,
     onInputValueChange: (String) -> Unit,
     playername: String,
     buttonColor: Color,
     buttonFontColor: Color
 ) {
+    val title = if (isEditMode) "Edit Score for $playername" else "Add Score to $playername"
+    val confirmText = if (isEditMode) "Update" else "Add"
+
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Add Score to $playername") },
+        title = { Text(title) },
         containerColor = buttonColor,
         textContentColor = buttonFontColor,
         titleContentColor = buttonFontColor,
@@ -265,6 +320,7 @@ private fun AddScorePopup(
                 value = inputValue,
                 onValueChange = onInputValueChange,
                 label = { Text("Enter score") },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 colors = TextFieldDefaults.colors(
                     unfocusedContainerColor = buttonColor,
                     focusedContainerColor = buttonColor,
@@ -277,19 +333,32 @@ private fun AddScorePopup(
             )
         },
         confirmButton = {
-            Button(onClick = onConfirm) {
-                Text(text = "Add")
+            Button(
+                onClick = onConfirm,
+                colors = ButtonDefaults.buttonColors(containerColor = blue)
+            ) {
+                Text(text = confirmText)
             }
         },
         dismissButton = {
-            Button(onClick = onDismiss) {
-                Text(text = "Cancel")
+            Row {
+                Button(
+                    onClick = onDismiss,
+                    colors = ButtonDefaults.buttonColors(containerColor = yellow)
+                ) {
+                    Text(text = "Cancel")
+                }
+                // --- NEW: Show Delete button only in edit mode ---
+                if (isEditMode) {
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Button(
+                        onClick = onDelete,
+                        colors = ButtonDefaults.buttonColors(containerColor = red)
+                    ) {
+                        Text(text = "Delete")
+                    }
+                }
             }
         }
     )
-}
-
-// Updated to work with a list of Score objects
-private fun TotalScore(scores: List<Scores>): Int {
-    return scores.sumOf { it.score }
 }

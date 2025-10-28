@@ -100,9 +100,6 @@ fun RollDicePage(navController: NavController){
             onPlayerAmountSelected = { amount ->
                 selectedDiceCount = amount
             },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(0.dp),
             selectedbgcolor = blue,
             bgcolor = white
         )

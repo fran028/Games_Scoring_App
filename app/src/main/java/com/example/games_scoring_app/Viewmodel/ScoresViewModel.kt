@@ -48,7 +48,7 @@ class ScoresViewModel(private val scoresRepository: ScoresRepository) : ViewMode
         }
     }
 
-    fun deleteScore(score: Scores) {
+    suspend fun deleteScore(score: Scores) {
         scoresRepository.deleteScore(score)
     }
 

@@ -80,6 +80,11 @@ class GamesViewModel(private val gamesRepository: GamesRepository) : ViewModel()
         }
     }
 
+    // --- NEW: Function to delete a game ---
+    suspend fun deleteGame(game: Games) {
+        gamesRepository.deleteGame(game)
+    }
+
     @RequiresApi(Build.VERSION_CODES.O)
     private fun getTodaysDate(): String {
         val today = LocalDate.now()

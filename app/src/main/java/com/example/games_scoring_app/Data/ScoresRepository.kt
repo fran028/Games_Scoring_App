@@ -17,7 +17,7 @@ class ScoresRepository(private val scoresDao: ScoresDao) {
         scoresDao.updateScore(score)
     }
 
-    fun deleteScore(score: Scores) {
+    suspend fun deleteScore(score: Scores) {
         scoresDao.deleteScore(score)
     }
 

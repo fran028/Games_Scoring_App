@@ -27,7 +27,7 @@ interface ScoresDao {
     suspend fun updateScore(score: Scores)
 
     @Delete
-    fun deleteScore(score: Scores)
+    suspend fun deleteScore(score: Scores)
 
     @Query("SELECT * FROM scores")
     fun getAllScores(): List<Scores>

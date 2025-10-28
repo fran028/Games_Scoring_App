@@ -30,12 +30,15 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.games_scoring_app.R
 import com.example.games_scoring_app.Theme.LeagueGothic
 import com.example.games_scoring_app.Theme.RobotoCondensed
+import com.example.games_scoring_app.Theme.red
 
 @Composable
 fun GameBox(
     onClick: () -> Unit,
+    onDelete: () -> Unit,
     title: String,
     bgcolor: Color,
     textcolor: Color,
@@ -53,19 +56,45 @@ fun GameBox(
         modifier = Modifier
             .fillMaxWidth()
             .height(IntrinsicSize.Min) // Ensures all children can fill the height of the tallest
-            .clickable { onClick() },
+            ,
         horizontalArrangement = Arrangement.Start,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // --- Element 1: Title and Description Box ---
-        // Use weight to make it take up the available space
+        Column(
+            // Removed horizontalAlignment
+            verticalArrangement = Arrangement.spacedBy(6.dp),
+            modifier = Modifier
+                .fillMaxHeight()
+                .width(50.dp)
+                .clickable { onDelete() }
+        ) {
+            Box(
+                modifier = Modifier
+                    .background(red, shape = RoundedCornerShape(10.dp))
+                    .clip(RoundedCornerShape(10.dp))
+                    .padding(horizontal = 12.dp, vertical = 4.dp)
+                    .weight(1f)
+                    .fillMaxWidth(), // Make the box fill the column's width
+                contentAlignment = Alignment.Center // Center the stats column vertically and horizontally
+            ) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Image(
+                        painter = painterResource(id = R.drawable.trash), // Assuming you have a delete icon
+                        contentDescription = "Delete Game",
+                        modifier = Modifier.size(32.dp)
+                    )
+                }
+            }
+        }
+        Spacer(modifier = Modifier.width(8.dp))
         Box(
             modifier = Modifier
                 .weight(1f) // This makes the box expand
                 .fillMaxHeight() // Makes it match the height of the row
                 .background(bgcolor, shape = RoundedCornerShape(10.dp))
                 .clip(RoundedCornerShape(10.dp))
-                .padding(horizontal = 16.dp, vertical = 16.dp),
+                .padding(horizontal = 16.dp, vertical = 16.dp)
+                .clickable { onClick() },
             contentAlignment = Alignment.CenterStart // Aligns the Column inside
         ) {
             Column(
@@ -73,28 +102,46 @@ fun GameBox(
                 verticalArrangement = Arrangement.Center
             ) {
                 // Row to hold the Title and the Icon Box
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Box(
-                        modifier = Modifier
-                            .size((iconSize).dp) // Smaller box for the icon
-                            .background(accentColor, shape = RoundedCornerShape(4.dp))
-                            .clip(RoundedCornerShape(4.dp)),
-                        contentAlignment = Alignment.Center
+                Row(verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    modifier = Modifier.fillMaxWidth())
+                {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Start
                     ) {
-                        Image(
-                            painter = painterResource(id = icon),
-                            contentDescription = "Title Icon",
-                            modifier = Modifier.size( if(gameType == "Generico") (iconSize*0.25f).dp else (iconSize*0.75f).dp) // Smaller icon
+                        Box(
+                            modifier = Modifier
+                                .size((iconSize).dp) // Smaller box for the icon
+                                .background(accentColor, shape = RoundedCornerShape(4.dp))
+                                .clip(RoundedCornerShape(4.dp)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Image(
+                                painter = painterResource(id = icon),
+                                contentDescription = "Title Icon",
+                                modifier = Modifier.size(if (gameType == "Generico") (iconSize * 0.25f).dp else (iconSize * 0.75f).dp) // Smaller icon
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.size(8.dp))
+                        Text(
+                            text = title,
+                            style = TextStyle(
+                                fontFamily = LeagueGothic,
+                                color = textcolor,
+                                fontSize = 40.sp,
+                            ),
+                            textAlign = TextAlign.Start
                         )
                     }
-
-                    Spacer(modifier = Modifier.width(8.dp))
+                    Spacer(modifier = Modifier.size(8.dp))
                     Text(
-                        text = title,
+                        text = "($daysSinceLastPlayed)",
                         style = TextStyle(
-                            fontFamily = LeagueGothic,
+                            fontFamily = RobotoCondensed,
                             color = textcolor,
-                            fontSize = 40.sp,
+                            fontSize = 20.sp,
                         ),
                         textAlign = TextAlign.Start
                     )
@@ -106,6 +153,16 @@ fun GameBox(
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     if (!players.isEmpty()) {
+                        Text(
+                            text = "Players:",
+                            style = TextStyle(
+                                fontFamily = RobotoCondensed,
+                                color = textcolor,
+                                fontSize = 16.sp,
+                            ),
+                            textAlign = TextAlign.Start
+                        )
+                        Spacer(modifier = Modifier.size(2.dp))
                         for (player in players) {
                             Text(
                                 text = player.name,
@@ -124,11 +181,10 @@ fun GameBox(
         }
         Spacer(modifier = Modifier.width(8.dp))
         Column(
-            // Removed horizontalAlignment
             verticalArrangement = Arrangement.spacedBy(6.dp),
             modifier = Modifier
                 .fillMaxHeight()
-                .width(100.dp) // Set a fixed width for the stats column
+                .width(50.dp).clickable { onClick() }
         ) {
             Box(
                 modifier = Modifier
@@ -140,14 +196,10 @@ fun GameBox(
                 contentAlignment = Alignment.Center // Center the stats column vertically and horizontally
             ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(
-                        text = daysSinceLastPlayed,
-                        style = TextStyle(
-                            fontFamily = RobotoCondensed,
-                            color = bgcolor,
-                            fontSize = 16.sp
-                        ),
-                        textAlign = TextAlign.Center
+                    Image(
+                        painter = painterResource(id = R.drawable.play), // Assuming you have a delete icon
+                        contentDescription = "play Game",
+                        modifier = Modifier.size(32.dp)
                     )
                 }
             }

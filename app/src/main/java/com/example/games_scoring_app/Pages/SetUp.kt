@@ -6,6 +6,7 @@ import androidx.annotation.RequiresApi
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -37,6 +38,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.PathEffect
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.KeyboardType
@@ -64,6 +67,7 @@ import com.example.games_scoring_app.R
 import com.example.games_scoring_app.Screen
 import com.example.games_scoring_app.Theme.LeagueGothic
 import com.example.games_scoring_app.Theme.black
+import com.example.games_scoring_app.Theme.darkgray
 import com.example.games_scoring_app.Theme.gray
 import com.example.games_scoring_app.Theme.green
 import com.example.games_scoring_app.Theme.white
@@ -216,52 +220,33 @@ fun SetupPage(navController: NavController, gameType: Int, gameColor: Color) {
 
             if(thisGameType.value.name != "Truco") {
                 Spacer(modifier = Modifier.height(16.dp))
-                Box(
+                Text(
+                    text = "Player Amount",
+                    fontFamily = LeagueGothic,
+                    fontSize = 48.sp,
+                    color = fontColor,
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp)
-                        .background(buttonColor, shape = RoundedCornerShape(10.dp))
-                        .clip(RoundedCornerShape(10.dp))
-                ) {
-                    Column(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Text(
-                            text = "Player Amount",
-                            fontFamily = LeagueGothic,
-                            fontSize = 48.sp,
-                            color = buttonFontColor,
-                            modifier = Modifier
-                                // Give it padding so it's not at the very edge of the box
-                                .padding(horizontal = 16.dp, vertical = 4.dp)
-                                .fillMaxWidth(), // Make text take full width to apply alignment
-                            textAlign = TextAlign.Left
-                        )
-                        // The Spacer is optional but can add a little breathing room
-                        Spacer(modifier = Modifier.height(4.dp))
-                        PlayerAmountGrid(
-                            maxPlayers = maxPlayers,
-                            minPlayers = minPlayers,
-                            onPlayerAmountSelected = { amount ->
-                                selectedPlayerCount = amount
-                            },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                // Add horizontal padding to align it with the title
-                                .padding(horizontal = 8.dp)
-                                // Add bottom padding for spacing inside the box
-                                .padding(bottom = 8.dp),
-                            selectedbgcolor = gameColor,
-                            // These colors were also incorrect in your provided snippet
-                            bgcolor = backgroundColor, // Unselected should be the main background
-                            textcolor = fontColor      // Text for unselected should be main font color
-                        )
-                    }
-                }
+                        // Give it padding so it's not at the very edge of the box
+                        .padding(horizontal = 16.dp, vertical = 4.dp)
+                        .fillMaxWidth(), // Make text take full width to apply alignment
+                    textAlign = TextAlign.Left
+                )
+
+                    PlayerAmountGrid(
+                        maxPlayers = maxPlayers,
+                        minPlayers = minPlayers,
+                        onPlayerAmountSelected = { amount ->
+                            selectedPlayerCount = amount
+                        },
+                        selectedbgcolor = gameColor,
+                        bgcolor = backgroundColor, // Unselected should be the main background
+                        textcolor = fontColor      // Text for unselected should be main font color
+                    )
             }
 
-            Column(modifier = Modifier.padding(horizontal = 10.dp )) {
+            Column(modifier = Modifier
+                .padding(horizontal = 16.dp)
+                .fillMaxWidth()) {
                 Spacer(modifier = Modifier.height(20.dp))
                 Text(
                     text = if(thisGameType.value.name == "Truco") "Team Names" else "Player Names",
@@ -274,69 +259,90 @@ fun SetupPage(navController: NavController, gameType: Int, gameColor: Color) {
                         .padding(horizontal = 12.dp),
                     textAlign = TextAlign.Left
                 )
-                Spacer(modifier = Modifier.size(16.dp))
-                //... inside the Column, inside the for loop
-                for (i in 0 until maxPlayers) {
-                    val isSelected = i < selectedPlayerCount
-                    var inputcolor = buttonColor
-                    if (isSelected && thisGameType.value.name != "Truco"){
-                        inputcolor = gameColor
-                    }
+                Spacer(modifier = Modifier.size(10.dp))
+                Column(
+                    modifier = Modifier  // Set padding for the box itself
+                        .background(darkgray, shape = RoundedCornerShape(10.dp))
+                        .clip(RoundedCornerShape(10.dp))
+                ) {
 
-                    // Define the border based on whether the TextField is enabled (isSelected)
-                    val border = if (isSelected) {
-                        BorderStroke(4.dp, inputcolor)
-                    } else {
-                        // Use a transparent border for disabled fields to maintain layout consistency
-                        BorderStroke(4.dp, gray)
-                    }
+                    Spacer(modifier = Modifier.height(12.dp))
+                    //... inside the Column, inside the for loop
 
-                    TextField(
-                        value = names[i],
-                        onValueChange = {
-                            names[i] = it
-                        },
-                        enabled = isSelected,
-                        placeholder = {
-                            Text(
-                                text = "Player Name",
-                                style = TextStyle(
-                                    color = fontColor.copy(alpha=0.5f),
-                                    fontSize = 24.sp,
-                                    fontFamily = LeagueGothic
-                                )
-                            )
-                        },
-                        modifier = Modifier
+                    for (i in 0 until maxPlayers) {
+                        val isSelected = i < selectedPlayerCount
+                        var inputcolor = buttonColor
+                        if (isSelected && thisGameType.value.name != "Truco") {
+                            inputcolor = gameColor
+                        }
+
+                        val modifier = Modifier
                             .fillMaxWidth()
                             .height(80.dp)
                             .padding(horizontal = 12.dp, vertical = 4.dp)
-                            .border(border, shape = RoundedCornerShape(10.dp)), // Apply the border here
-                        shape = RoundedCornerShape(10.dp),
-                        textStyle = TextStyle(
-                            fontFamily = LeagueGothic,
-                            fontSize = 32.sp,
-                            color = fontColor
-                        ),
-                        singleLine = true,
-                        colors = TextFieldDefaults.colors(
-                            // Set the container color to black (or your desired background)
-                            unfocusedContainerColor = black,
-                            focusedContainerColor = black,
-                            // Adjust the disabled color to be less prominent
-                            disabledContainerColor = black.copy(alpha = 0.3f),
-                            focusedIndicatorColor = Color.Transparent,
-                            unfocusedIndicatorColor = Color.Transparent,
-                            disabledIndicatorColor = Color.Transparent,
-                            cursorColor = fontColor
-                        ),
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text)
+                            .pointerInput(Unit) {
+                                if (!isSelected && i == selectedPlayerCount) {
+                                    detectTapGestures {
+                                        selectedPlayerCount++
+                                    }
+                                }
+                            }
 
-                    )
-                    if(thisGameType.value.name != "Truco") {
-                        Spacer(modifier = Modifier.height(6.dp))
-                    } else {
-                        Spacer(modifier = Modifier.height(12.dp))
+                        val border = if (isSelected) {
+                            BorderStroke(4.dp, inputcolor)
+                        } else {
+                            if (i == selectedPlayerCount) {
+                                BorderStroke(
+                                    width = 2.dp,
+                                    color = gray,
+
+                                )
+
+                            } else {
+                                BorderStroke(2.dp, gray.copy(alpha = 0.5f))
+                            }
+                        }
+
+                        TextField(
+                            value = names[i],
+                            onValueChange = { names[i] = it },
+                            enabled = isSelected,
+                            placeholder = {
+                                val placeholderText = if (i == selectedPlayerCount) "Add Player..." else "Player Name"
+                                Text(
+                                    text = placeholderText,
+                                    style = TextStyle(
+                                        color = fontColor.copy(alpha = 0.5f),
+                                        fontSize = 24.sp,
+                                        fontFamily = LeagueGothic
+                                    )
+                                )
+                            },
+                            modifier = modifier.border(border, shape = RoundedCornerShape(10.dp)), // Apply the border here
+                            shape = RoundedCornerShape(10.dp),
+                            textStyle = TextStyle(
+                                fontFamily = LeagueGothic,
+                                fontSize = 32.sp,
+                                color = fontColor
+                            ),
+                            singleLine = true,
+                            colors = TextFieldDefaults.colors(
+                                unfocusedContainerColor = black,
+                                focusedContainerColor = black,
+                                // Make the disabled container slightly different
+                                disabledContainerColor = if (i == selectedPlayerCount) darkgray else black.copy(alpha = 0.3f),
+                                focusedIndicatorColor = Color.Transparent,
+                                unfocusedIndicatorColor = Color.Transparent,
+                                disabledIndicatorColor = Color.Transparent,
+                                cursorColor = fontColor
+                            ),
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text)
+                        )
+                        if (thisGameType.value.name != "Truco") {
+                            Spacer(modifier = Modifier.height(6.dp))
+                        } else {
+                            Spacer(modifier = Modifier.height(12.dp))
+                        }
                     }
                 }
 
