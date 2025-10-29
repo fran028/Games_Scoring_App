@@ -49,7 +49,7 @@ import kotlinx.coroutines.delay
 
 @Composable
 fun RollDicePage(navController: NavController){
-    val TAG = "RollDicePage"
+    /*val TAG = "RollDicePage"
     Log.d(TAG, "RollDicePage called")
 
     val scrollState = rememberScrollState()
@@ -100,6 +100,9 @@ fun RollDicePage(navController: NavController){
             onPlayerAmountSelected = { amount ->
                 selectedDiceCount = amount
             },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(0.dp),
             selectedbgcolor = blue,
             bgcolor = white
         )
@@ -150,5 +153,5 @@ fun RollDicePage(navController: NavController){
             }
 
         }
-    }
+    }*/
 }

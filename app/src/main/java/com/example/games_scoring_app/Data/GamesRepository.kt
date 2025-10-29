@@ -16,7 +16,7 @@ class GamesRepository(private val gamesDao: GamesDao) {
         gamesDao.updateGame(game)
     }
 
-    fun deleteGame(game: Games) {
+    suspend fun deleteGame(game: Games) {
         gamesDao.deleteGame(game)
     }
 

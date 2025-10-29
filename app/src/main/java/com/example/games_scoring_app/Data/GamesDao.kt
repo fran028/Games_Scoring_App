@@ -21,7 +21,7 @@ interface GamesDao {
     @Update
     fun updateGame(game: Games)
     @Delete
-    fun deleteGame(game: Games)
+    suspend fun deleteGame(game: Games)
 
     @Query("SELECT * FROM games")
     fun getAllGames(): List<Games>

@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -32,6 +33,7 @@ import com.example.games_scoring_app.R
 import com.example.games_scoring_app.Theme.LeagueGothic
 import com.example.games_scoring_app.Theme.RobotoCondensed
 import com.example.games_scoring_app.Theme.darkgray
+import com.example.games_scoring_app.Theme.gray
 import com.example.games_scoring_app.Theme.red
 
 @Composable
@@ -49,37 +51,32 @@ fun ScoreBoardBox(
     timesPlayed: Int,
     daysSinceLastPlayed: String
 ) {
+    val iconSize = 32
 
-
-    var iconSize = 32
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(IntrinsicSize.Min) // Ensures all children can fill the height of the tallest
-            .clickable { onClick() },
-        horizontalArrangement = Arrangement.Start,
-        verticalAlignment = Alignment.CenterVertically
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        // --- Element 1: Title and Description Box ---
-        // Use weight to make it take up the available space
-        Box(
+        Row(
             modifier = Modifier
-                .weight(1f) // This makes the box expand
-                .fillMaxHeight() // Makes it match the height of the row
-                .background(bgcolor, shape = RoundedCornerShape(10.dp))
-                .clip(RoundedCornerShape(10.dp))
-                .padding(horizontal = 16.dp, vertical = 16.dp),
-            contentAlignment = Alignment.CenterStart // Aligns the Column inside
+                .fillMaxWidth()
+                .height(IntrinsicSize.Min),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Column(
-                horizontalAlignment = Alignment.Start,
-                verticalArrangement = Arrangement.Center
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxHeight()
+                    .background(bgcolor, shape = RoundedCornerShape(10.dp))
+                    .clip(RoundedCornerShape(10.dp))
+                    .clickable { onClick() } // The main body is clickable
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                contentAlignment = Alignment.CenterStart
             ) {
-                // Row to hold the Title and the Icon Box
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Box(
                         modifier = Modifier
-                            .size((iconSize).dp) // Smaller box for the icon
+                            .size(iconSize.dp)
                             .background(accentColor, shape = RoundedCornerShape(4.dp))
                             .clip(RoundedCornerShape(4.dp)),
                         contentAlignment = Alignment.Center
@@ -87,10 +84,9 @@ fun ScoreBoardBox(
                         Image(
                             painter = painterResource(id = icon),
                             contentDescription = "Title Icon",
-                            modifier = Modifier.size( if(gameType == "Generico") (iconSize*0.25f).dp else (iconSize*0.75f).dp) // Smaller icon
+                            modifier = Modifier.size(if (gameType == "Generico") (iconSize * 0.25f).dp else (iconSize * 0.75f).dp)
                         )
                     }
-
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
                         text = title,
@@ -99,101 +95,62 @@ fun ScoreBoardBox(
                             color = textcolor,
                             fontSize = 40.sp,
                         ),
-                        textAlign = TextAlign.Start
+                        textAlign = TextAlign.Start,
                     )
-
+                    if (showStats) {
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = "($timesPlayed)",
+                            style = TextStyle(
+                                fontFamily = RobotoCondensed,
+                                color = textcolor.copy(alpha = 0.7f),
+                                fontSize = 18.sp,
+                            ),
+                        )
+                    }
                 }
+            }
 
+            Spacer(modifier = Modifier.width(8.dp))
+            Box(
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .aspectRatio(1f) // Make it a square
+                    .background(accentColor, shape = RoundedCornerShape(10.dp))
+                    .clip(RoundedCornerShape(10.dp))
+                    .clickable { onClick() },
+                contentAlignment = Alignment.Center
+            ) {
+                Image(
+                    painter = painterResource(id = R.drawable.play),
+                    contentDescription = "Play Game",
+                    modifier = Modifier.size(32.dp)
+                )
+            }
+        }
+        Row(
+            modifier = Modifier.fillMaxWidth()
+        ) {
+//            Box(
+//                modifier = Modifier
+//                    .fillMaxWidth()
+//                    .background(Color.Transparent, shape = RoundedCornerShape(10.dp))
+//                    .clip(RoundedCornerShape(10.dp))
+//                    .padding(horizontal = 16.dp, vertical = 12.dp),
+//                contentAlignment = Alignment.CenterStart
+//            ) {
                 if (description.isNotBlank()) {
                     Text(
                         text = description,
                         style = TextStyle(
                             fontFamily = RobotoCondensed,
-                            color = textcolor,
+                            color = gray,
                             fontSize = 16.sp,
                         ),
                         textAlign = TextAlign.Start
                     )
                 }
-            }
-        }
-        if(showStats) {
-            Spacer(modifier = Modifier.width(8.dp))
-            Column(
-                // Removed horizontalAlignment
-                verticalArrangement = Arrangement.spacedBy(6.dp),
-                modifier = Modifier
-                    .fillMaxHeight()
-                    .width(100.dp) // Set a fixed width for the stats column
-            ) {
-                Box(
-                    modifier = Modifier
-                        .background(darkgray, shape = RoundedCornerShape(10.dp))
-                        .clip(RoundedCornerShape(10.dp))
-                        .padding(horizontal = 12.dp, vertical = 4.dp)
-                        .weight(1f)
-                        .fillMaxWidth(), // Make the box fill the column's width
-                    contentAlignment = Alignment.Center // Center the stats column vertically and horizontally
-                ) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(
-                            text = "Partidas $timesPlayed",
-                            style = TextStyle(
-                                fontFamily = RobotoCondensed,
-                                color = accentColor,
-                                fontSize = 16.sp
-                            )
-                        )
-                    }
-                }
-                Box(
-                    modifier = Modifier
-                        .background(darkgray, shape = RoundedCornerShape(10.dp))
-                        .clip(RoundedCornerShape(10.dp))
-                        .padding(horizontal = 12.dp, vertical = 4.dp)
-                        .weight(1f)
-                        .fillMaxWidth(), // Make the box fill the column's width
-                    contentAlignment = Alignment.Center // Center the stats column vertically and horizontally
-                ) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(
-                            text = daysSinceLastPlayed,
-                            style = TextStyle(
-                                fontFamily = RobotoCondensed,
-                                color = accentColor,
-                                fontSize = 16.sp
-                            ),
-                            textAlign = TextAlign.Center
-                        )
-                    }
-                }
-            }
-        }
-        Spacer(modifier = Modifier.width(8.dp))
-        Column(
-            // Removed horizontalAlignment
-            verticalArrangement = Arrangement.spacedBy(6.dp),
-            modifier = Modifier
-                .fillMaxHeight()
-                .width(50.dp)
-        ) {
-            Box(
-                modifier = Modifier
-                    .background(accentColor, shape = RoundedCornerShape(10.dp))
-                    .clip(RoundedCornerShape(10.dp))
-                    .padding(horizontal = 12.dp, vertical = 4.dp)
-                    .weight(1f)
-                    .fillMaxWidth(), // Make the box fill the column's width
-                contentAlignment = Alignment.Center // Center the stats column vertically and horizontally
-            ) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Image(
-                        painter = painterResource(id = R.drawable.play), // Assuming you have a delete icon
-                        contentDescription = "play Game",
-                        modifier = Modifier.size(32.dp)
-                    )
-                }
-            }
+           // }
         }
     }
 }

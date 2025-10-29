@@ -81,8 +81,8 @@ class GamesViewModel(private val gamesRepository: GamesRepository) : ViewModel()
     }
 
     // --- NEW: Function to delete a game ---
-    suspend fun deleteGame(game: Games) {
-        gamesRepository.deleteGame(game)
+    fun deleteGame(game: Games) = viewModelScope.launch { // <-- LAUNCH a coroutine here
+        gamesRepository.deleteGame(game) // This now calls the suspend function correctly
     }
 
     @RequiresApi(Build.VERSION_CODES.O)

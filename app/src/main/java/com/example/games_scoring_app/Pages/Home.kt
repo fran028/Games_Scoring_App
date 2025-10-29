@@ -177,7 +177,6 @@ fun HomePage(navController: NavController) {
                     }
                     LastGameBox(
                         title = lastGameTypeName.uppercase(),
-                        description = "",
                         bgcolor = darkgray,
                         accentColor = accentColor,
                         textcolor = buttonColor,
@@ -240,7 +239,7 @@ fun HomePage(navController: NavController) {
                             timesPlayed = stats.timesPlayed,
                             daysSinceLastPlayed = stats.daysSinceLastPlayed
                         )
-                        Spacer(modifier = Modifier.height(16.dp))
+                        Spacer(modifier = Modifier.height(24.dp))
                     }
                 }
                 /*ButtonBar(

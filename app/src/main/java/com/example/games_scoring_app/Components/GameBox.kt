@@ -8,9 +8,11 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+// import androidx.compose.foundation.layout.FlowRow // No longer needed
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -25,14 +27,19 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.games_scoring_app.R
 import com.example.games_scoring_app.Theme.LeagueGothic
 import com.example.games_scoring_app.Theme.RobotoCondensed
+import com.example.games_scoring_app.Theme.darkgray
 import com.example.games_scoring_app.Theme.red
 
 @Composable
@@ -49,70 +56,61 @@ fun GameBox(
     daysSinceLastPlayed: String,
     players: List<Players>
 ) {
+    val iconSize = 32
 
-
-    var iconSize = 32
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(IntrinsicSize.Min) // Ensures all children can fill the height of the tallest
-            ,
-        horizontalArrangement = Arrangement.Start,
-        verticalAlignment = Alignment.CenterVertically
+    // Main container for the entire component
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(8.dp) // Space between the box and the player list
     ) {
-        Column(
-            // Removed horizontalAlignment
-            verticalArrangement = Arrangement.spacedBy(6.dp),
+        // --- Top Row: Delete Button, Content Box, Play Button ---
+        Row(
             modifier = Modifier
-                .fillMaxHeight()
-                .width(50.dp)
-                .clickable { onDelete() }
+                .fillMaxWidth()
+                .height(IntrinsicSize.Min),
+            verticalAlignment = Alignment.CenterVertically
         ) {
+            // --- 1. Delete Button (Left Square) ---
+            Box(
+                // --- MODIFICATION: Use fillMaxHeight and aspectRatio to make it a square matching the row height ---
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .width(48.dp)
+                    .background(red, shape = RoundedCornerShape(8.dp))
+                    .clip(RoundedCornerShape(8.dp))
+                    .clickable { onDelete() },
+                contentAlignment = Alignment.Center
+            ) {
+                Image(
+                    painter = painterResource(id = R.drawable.trash),
+                    contentDescription = "Delete Game",
+                    modifier = Modifier.size(32.dp) // Icon size can be larger now
+                )
+            }
+
+            Spacer(modifier = Modifier.width(8.dp))
+
+            // --- 2. Main Content Box (Center) ---
             Box(
                 modifier = Modifier
-                    .background(red, shape = RoundedCornerShape(10.dp))
+                    .weight(1f) // Expands to fill available space
+                    .fillMaxHeight()
+                    .background(bgcolor, shape = RoundedCornerShape(10.dp))
                     .clip(RoundedCornerShape(10.dp))
-                    .padding(horizontal = 12.dp, vertical = 4.dp)
-                    .weight(1f)
-                    .fillMaxWidth(), // Make the box fill the column's width
-                contentAlignment = Alignment.Center // Center the stats column vertically and horizontally
+                    .clickable { onClick() }
+                    .padding(horizontal = 16.dp, vertical = 12.dp),
+                contentAlignment = Alignment.CenterStart
             ) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Image(
-                        painter = painterResource(id = R.drawable.trash), // Assuming you have a delete icon
-                        contentDescription = "Delete Game",
-                        modifier = Modifier.size(32.dp)
-                    )
-                }
-            }
-        }
-        Spacer(modifier = Modifier.width(8.dp))
-        Box(
-            modifier = Modifier
-                .weight(1f) // This makes the box expand
-                .fillMaxHeight() // Makes it match the height of the row
-                .background(bgcolor, shape = RoundedCornerShape(10.dp))
-                .clip(RoundedCornerShape(10.dp))
-                .padding(horizontal = 16.dp, vertical = 16.dp)
-                .clickable { onClick() },
-            contentAlignment = Alignment.CenterStart // Aligns the Column inside
-        ) {
-            Column(
-                horizontalAlignment = Alignment.Start,
-                verticalArrangement = Arrangement.Center
-            ) {
-                // Row to hold the Title and the Icon Box
-                Row(verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    modifier = Modifier.fillMaxWidth())
-                {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Start
-                    ) {
+                // --- MODIFICATION: Use a Column to stack Title and Date ---
+                Column(
+                    horizontalAlignment = Alignment.Start,
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    // Top part: Icon and Title
+                    Row(verticalAlignment = Alignment.CenterVertically) {
                         Box(
                             modifier = Modifier
-                                .size((iconSize).dp) // Smaller box for the icon
+                                .size(iconSize.dp)
                                 .background(accentColor, shape = RoundedCornerShape(4.dp))
                                 .clip(RoundedCornerShape(4.dp)),
                             contentAlignment = Alignment.Center
@@ -120,89 +118,93 @@ fun GameBox(
                             Image(
                                 painter = painterResource(id = icon),
                                 contentDescription = "Title Icon",
-                                modifier = Modifier.size(if (gameType == "Generico") (iconSize * 0.25f).dp else (iconSize * 0.75f).dp) // Smaller icon
+                                modifier = Modifier.size(if (gameType == "Generico") (iconSize * 0.25f).dp else (iconSize * 0.75f).dp)
                             )
                         }
-
-                        Spacer(modifier = Modifier.size(8.dp))
+                        Spacer(modifier = Modifier.width(8.dp))
                         Text(
                             text = title,
                             style = TextStyle(
                                 fontFamily = LeagueGothic,
                                 color = textcolor,
                                 fontSize = 40.sp,
-                            ),
-                            textAlign = TextAlign.Start
+                            )
                         )
-                    }
-                    Spacer(modifier = Modifier.size(8.dp))
-                    Text(
-                        text = "($daysSinceLastPlayed)",
-                        style = TextStyle(
-                            fontFamily = RobotoCondensed,
-                            color = textcolor,
-                            fontSize = 20.sp,
-                        ),
-                        textAlign = TextAlign.Start
-                    )
-
-                }
-                Row(
-                    verticalAlignment = Alignment.Top,
-                    horizontalArrangement = Arrangement.Start,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    if (!players.isEmpty()) {
+                        Spacer(modifier = Modifier.width(4.dp))
                         Text(
-                            text = "Players:",
+                            text = "($daysSinceLastPlayed)",
                             style = TextStyle(
                                 fontFamily = RobotoCondensed,
-                                color = textcolor,
-                                fontSize = 16.sp,
+                                color = textcolor.copy(alpha = 0.7f),
+                                fontSize = 12.sp,
                             ),
-                            textAlign = TextAlign.Start
+                            modifier = Modifier.padding(start = 4.dp) // Indent slightly
                         )
-                        Spacer(modifier = Modifier.size(2.dp))
-                        for (player in players) {
-                            Text(
-                                text = player.name,
-                                style = TextStyle(
-                                    fontFamily = RobotoCondensed,
-                                    color = if (player.won) gold else textcolor,
-                                    fontSize = 16.sp,
-                                ),
-                                textAlign = TextAlign.Start
-                            )
-                            Spacer(modifier = Modifier.size(2.dp))
-                        }
                     }
+                    // Bottom part: Date, now correctly under the title
+
                 }
+            }
+
+            Spacer(modifier = Modifier.width(8.dp))
+
+            // --- 3. Play Button (Right Square) ---
+            Box(
+                // --- MODIFICATION: Use fillMaxHeight and aspectRatio to make it a square matching the row height ---
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .width(48.dp)
+                    .background(accentColor, shape = RoundedCornerShape(8.dp))
+                    .clip(RoundedCornerShape(8.dp))
+                    .clickable { onClick() },
+                contentAlignment = Alignment.Center
+            ) {
+                Image(
+                    painter = painterResource(id = R.drawable.play),
+                    contentDescription = "Play Game",
+                    modifier = Modifier.size(26.dp) // Icon size can be larger now
+                )
             }
         }
-        Spacer(modifier = Modifier.width(8.dp))
-        Column(
-            verticalArrangement = Arrangement.spacedBy(6.dp),
-            modifier = Modifier
-                .fillMaxHeight()
-                .width(50.dp).clickable { onClick() }
-        ) {
+
+        // --- Players List (Below the main row) ---
+        if (players.isNotEmpty()) {
+            val annotatedPlayerString = buildAnnotatedString {
+                val winner = players.find { it.won }
+                val otherPlayers = players.filter { !it.won }
+
+                if (winner != null) {
+                    withStyle(style = SpanStyle(color = gold, fontWeight = FontWeight.Bold)) {
+                        append(winner.name)
+                    }
+                    if (otherPlayers.isNotEmpty()) {
+                        append(" / ")
+                    }
+                }
+                append(otherPlayers.joinToString(" / ") { it.name })
+            }
+
+            // --- MODIFICATION START ---
+            // Wrap the Text in a Box with a background
             Box(
                 modifier = Modifier
-                    .background(accentColor, shape = RoundedCornerShape(10.dp))
-                    .clip(RoundedCornerShape(10.dp))
-                    .padding(horizontal = 12.dp, vertical = 4.dp)
-                    .weight(1f)
-                    .fillMaxWidth(), // Make the box fill the column's width
-                contentAlignment = Alignment.Center // Center the stats column vertically and horizontally
+                    .fillMaxWidth()
+                    .background(darkgray, shape = RoundedCornerShape(8.dp))
+                    .clip(RoundedCornerShape(8.dp))
+                    .padding(horizontal = 12.dp, vertical = 8.dp), // Add padding inside the box
+                contentAlignment = Alignment.Center
             ) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Image(
-                        painter = painterResource(id = R.drawable.play), // Assuming you have a delete icon
-                        contentDescription = "play Game",
-                        modifier = Modifier.size(32.dp)
-                    )
-                }
+                Text(
+                    text = annotatedPlayerString,
+                    style = TextStyle(
+                        fontFamily = RobotoCondensed,
+                        color = textcolor.copy(alpha = 0.8f),
+                        fontSize = 16.sp,
+                    ),
+                    textAlign = TextAlign.Center
+                )
             }
+            // --- MODIFICATION END ---
         }
     }
 }

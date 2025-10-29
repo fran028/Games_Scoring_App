@@ -49,6 +49,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.games_scoring_app.Components.ButtonBar
+import com.example.games_scoring_app.Components.GameTypeTitle
 import com.example.games_scoring_app.Components.IconButtonBar
 import com.example.games_scoring_app.Components.LoadingMessage
 import com.example.games_scoring_app.Components.PlayerAmountGrid
@@ -105,21 +106,14 @@ fun SetupPage(navController: NavController, gameType: Int, gameColor: Color) {
     // --- ViewModel Setup ---
     val gamesRepository = GamesRepository(database.gamesDao())
     val gamesViewModel: GamesViewModel = viewModel(factory = GamesViewModelFactory(gamesRepository))
-
     val gameTypesRepository = GameTypesRepository(database.gameTypesDao())
     val gameTypesViewModel: GameTypesViewModel = viewModel(factory = GameTypesViewModelFactory(gameTypesRepository))
-
     val scoreTypesRepository = ScoreTypesRepository(database.scoreTypesDao())
     val scoreTypesViewModel: ScoreTypesViewModel = viewModel(factory = ScoreTypesViewModelFactory(scoreTypesRepository))
-
     val playersRepository = PlayersRepository(database.playersDao())
     val playersViewModel: PlayersViewModel = viewModel(factory = PlayersViewModelFactory(playersRepository))
-
-
-    // ADDED: ScoresViewModel is required to create initial scores
     val scoresRepository = ScoresRepository(database.scoresDao())
     val scoresViewModel: ScoresViewModel = viewModel(factory = ScoresViewModelFactory(scoresRepository))
-
     val settingsRepository = SettingsRepository(database.settingsDao())
     val settingsViewModel: SettingsViewModel = viewModel(factory = SettingsViewModelFactory(settingsRepository))
 
@@ -133,7 +127,7 @@ fun SetupPage(navController: NavController, gameType: Int, gameColor: Color) {
     val thisGameType = remember { mutableStateOf(gameTypesViewModel.emptyGameType()) }
     val maxPlayers by remember { derivedStateOf { thisGameType.value.maxPlayers } }
     val minPlayers by remember { derivedStateOf { thisGameType.value.minPlayers } }
-    var selectedPlayerCount by remember { mutableStateOf(0) }
+    var selectedPlayerCount by remember { mutableStateOf(minPlayers) }
     val defaultNames = listOf("P1", "P2", "P3", "P4", "P5", "P6", "P7", "P8", "P9", "P10")
     val showSetup = remember { mutableStateOf(false) }
     Log.d(TAG, "Variables initialize")
@@ -144,8 +138,8 @@ fun SetupPage(navController: NavController, gameType: Int, gameColor: Color) {
         settingsViewModel.getThemeMode()
     }
 
-    LaunchedEffect(key1 = gameTypes) {
-        Log.d(TAG, "gameTypes LaunchedEffect called")
+    LaunchedEffect(key1 = gameTypes, key2 = minPlayers) {
+        Log.d(TAG, "gameTypes/minPlayers LaunchedEffect called")
         if (gameTypes.isNotEmpty()) {
             Log.d(TAG, "gameTypes is not empty")
 
@@ -153,8 +147,12 @@ fun SetupPage(navController: NavController, gameType: Int, gameColor: Color) {
 
             if (foundGameType != null) {
                 thisGameType.value = foundGameType // Update the State
+
+                // Update the state here. Since minPlayers is a key, this effect will re-run
+                // when thisGameType is set and minPlayers changes from its initial value.
                 selectedPlayerCount = minPlayers
-                Log.d(TAG, "selectedPlayerCount: $selectedPlayerCount")
+
+                Log.d(TAG, "selectedPlayerCount set to: $selectedPlayerCount")
                 names.clear()
                 // Initialize the names list with empty strings up to the max player count
                 repeat(foundGameType.maxPlayers) {
@@ -171,7 +169,6 @@ fun SetupPage(navController: NavController, gameType: Int, gameColor: Color) {
             Log.d(TAG, "gameTypes is empty")
         }
     }
-
 
     val backgroundColor = if (themeMode == 0) black else white
     val fontColor = if (themeMode == 0) white else black
@@ -206,35 +203,33 @@ fun SetupPage(navController: NavController, gameType: Int, gameColor: Color) {
                 }
             }
             Column (Modifier.padding(horizontal = 16.dp )) {
-                IconButtonBar(
-                    text = thisGameType.value.name.uppercase(),
-                    bgcolor = gameColor,
-                    height = 48.dp,
-                    textcolor = black,
-                    onClick = { },
+                GameTypeTitle(
+                    title = thisGameType.value.name.uppercase(),
+                    bgcolor = darkgray,
+                    textcolor = fontColor,
                     icon = buttonIconId,
-                    iconSize = 32.dp,
-                    doubleIcon = true
+                    accentColor = gameColor,
                 )
             }
-
-            if(thisGameType.value.name != "Truco") {
-                Spacer(modifier = Modifier.height(16.dp))
-                Text(
-                    text = "Player Amount",
-                    fontFamily = LeagueGothic,
-                    fontSize = 48.sp,
-                    color = fontColor,
-                    modifier = Modifier
-                        // Give it padding so it's not at the very edge of the box
-                        .padding(horizontal = 16.dp, vertical = 4.dp)
-                        .fillMaxWidth(), // Make text take full width to apply alignment
-                    textAlign = TextAlign.Left
-                )
+            Column (Modifier.padding(horizontal = 16.dp )) {
+                if (thisGameType.value.name != "Truco") {
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text(
+                        text = "Player Amount",
+                        fontFamily = LeagueGothic,
+                        fontSize = 48.sp,
+                        color = fontColor,
+                        modifier = Modifier
+                            // Give it padding so it's not at the very edge of the box
+                            .padding( vertical = 4.dp)
+                            .fillMaxWidth(), // Make text take full width to apply alignment
+                        textAlign = TextAlign.Left
+                    )
 
                     PlayerAmountGrid(
                         maxPlayers = maxPlayers,
                         minPlayers = minPlayers,
+                        selectedAmount = selectedPlayerCount,
                         onPlayerAmountSelected = { amount ->
                             selectedPlayerCount = amount
                         },
@@ -242,21 +237,16 @@ fun SetupPage(navController: NavController, gameType: Int, gameColor: Color) {
                         bgcolor = backgroundColor, // Unselected should be the main background
                         textcolor = fontColor      // Text for unselected should be main font color
                     )
-            }
-
-            Column(modifier = Modifier
-                .padding(horizontal = 16.dp)
-                .fillMaxWidth()) {
+                }
                 Spacer(modifier = Modifier.height(20.dp))
                 Text(
-                    text = if(thisGameType.value.name == "Truco") "Team Names" else "Player Names",
+                    text = if (thisGameType.value.name == "Truco") "Team Names" else "Player Names",
                     fontFamily = LeagueGothic,
                     fontSize = 48.sp,
                     color = fontColor,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .align(Alignment.CenterHorizontally)
-                        .padding(horizontal = 12.dp),
+                        .align(Alignment.CenterHorizontally),
                     textAlign = TextAlign.Left
                 )
                 Spacer(modifier = Modifier.size(10.dp))
@@ -296,7 +286,7 @@ fun SetupPage(navController: NavController, gameType: Int, gameColor: Color) {
                                     width = 2.dp,
                                     color = gray,
 
-                                )
+                                    )
 
                             } else {
                                 BorderStroke(2.dp, gray.copy(alpha = 0.5f))
@@ -308,7 +298,8 @@ fun SetupPage(navController: NavController, gameType: Int, gameColor: Color) {
                             onValueChange = { names[i] = it },
                             enabled = isSelected,
                             placeholder = {
-                                val placeholderText = if (i == selectedPlayerCount) "Add Player..." else "Player Name"
+                                val placeholderText =
+                                    if (i == selectedPlayerCount) "Add Player..." else "Player Name"
                                 Text(
                                     text = placeholderText,
                                     style = TextStyle(
@@ -318,7 +309,10 @@ fun SetupPage(navController: NavController, gameType: Int, gameColor: Color) {
                                     )
                                 )
                             },
-                            modifier = modifier.border(border, shape = RoundedCornerShape(10.dp)), // Apply the border here
+                            modifier = modifier.border(
+                                border,
+                                shape = RoundedCornerShape(10.dp)
+                            ), // Apply the border here
                             shape = RoundedCornerShape(10.dp),
                             textStyle = TextStyle(
                                 fontFamily = LeagueGothic,
@@ -330,7 +324,9 @@ fun SetupPage(navController: NavController, gameType: Int, gameColor: Color) {
                                 unfocusedContainerColor = black,
                                 focusedContainerColor = black,
                                 // Make the disabled container slightly different
-                                disabledContainerColor = if (i == selectedPlayerCount) darkgray else black.copy(alpha = 0.3f),
+                                disabledContainerColor = if (i == selectedPlayerCount) darkgray else black.copy(
+                                    alpha = 0.3f
+                                ),
                                 focusedIndicatorColor = Color.Transparent,
                                 unfocusedIndicatorColor = Color.Transparent,
                                 disabledIndicatorColor = Color.Transparent,
@@ -347,66 +343,71 @@ fun SetupPage(navController: NavController, gameType: Int, gameColor: Color) {
                 }
 
                 Spacer(modifier = Modifier.height(20.dp))
-                Row (modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 12.dp), horizontalArrangement = Arrangement.Center) {
-                    ButtonBar(
-                        text = "START GAME",
-                        bgcolor = green,
-                        height = 48.dp,
-                        textcolor = white,
-                        onClick = {
-                            Log.d(TAG, "START GAME button clicked")
+                ButtonBar(
+                    text = "START GAME",
+                    bgcolor = green,
+                    height = 48.dp,
+                    textcolor = white,
+                    onClick = {
+                        Log.d(TAG, "START GAME button clicked")
 
-                            coroutineScope.launch {
-                                // FIXED: Corrected logic to match new architecture
-                                // 1. Create the new game object and insert it to get its ID.
-                                val gameToInsert = Games(
-                                    id_GameType = thisGameType.value.id,
+                        coroutineScope.launch {
+                            // FIXED: Corrected logic to match new architecture
+                            // 1. Create the new game object and insert it to get its ID.
+                            val gameToInsert = Games(
+                                id_GameType = thisGameType.value.id,
+                            )
+                            val gameId = gamesViewModel.addNewGame(gameToInsert)
+                            Log.d(TAG, "New game created with ID: $gameId")
+
+                            // 2. Get the required ScoreTypes for this game.
+                            val scoreTypesForGame =
+                                scoreTypesViewModel.getScoreTypesForGame(thisGameType.value.id)
+                            Log.d(
+                                TAG,
+                                "Found ${scoreTypesForGame.size} score types for game type ${thisGameType.value.id}"
+                            )
+
+                            // 3. Iterate through players to insert them and their initial scores.
+                            for (i in 0 until selectedPlayerCount) {
+                                val playerName =
+                                    if (names[i].isNotBlank()) names[i] else defaultNames[i]
+
+                                // 3a. Create and insert the player to get their ID.
+                                val newPlayer = Players(
+                                    id_game = gameId.toInt(),
+                                    name = playerName
                                 )
-                                val gameId = gamesViewModel.addNewGame(gameToInsert)
-                                Log.d(TAG, "New game created with ID: $gameId")
+                                val newPlayerId = playersViewModel.addNewPlayer(newPlayer)
+                                Log.d(TAG, "Player '$playerName' created with ID: $newPlayerId")
 
-                                // 2. Get the required ScoreTypes for this game.
-                                val scoreTypesForGame = scoreTypesViewModel.getScoreTypesForGame(thisGameType.value.id)
-                                Log.d(TAG, "Found ${scoreTypesForGame.size} score types for game type ${thisGameType.value.id}")
-
-                                // 3. Iterate through players to insert them and their initial scores.
-                                for (i in 0 until selectedPlayerCount) {
-                                    val playerName = if (names[i].isNotBlank()) names[i] else defaultNames[i]
-
-                                    // 3a. Create and insert the player to get their ID.
-                                    val newPlayer = Players(
-                                        id_game = gameId.toInt(),
-                                        name = playerName
+                                // 3b. CRITICAL: Create an initial score entry (usually 0) for each required score type.
+                                scoreTypesForGame.forEach { scoreType ->
+                                    val initialScore = Scores(
+                                        id_player = newPlayerId.toInt(),
+                                        id_score_type = scoreType.id,
+                                        score = 0,
+                                        isFinalScore = false
                                     )
-                                    val newPlayerId = playersViewModel.addNewPlayer(newPlayer)
-                                    Log.d(TAG, "Player '$playerName' created with ID: $newPlayerId")
-
-                                    // 3b. CRITICAL: Create an initial score entry (usually 0) for each required score type.
-                                    scoreTypesForGame.forEach { scoreType ->
-                                        val initialScore = Scores(
-                                            id_player = newPlayerId.toInt(),
-                                            id_score_type = scoreType.id,
-                                            score = 0,
-                                            isFinalScore = false
-                                        )
-                                        scoresViewModel.addScore(initialScore)
-                                        Log.d(TAG, "Initial score created for player $newPlayerId for score type '${scoreType.name}'")
-                                    }
+                                    scoresViewModel.addScore(initialScore)
+                                    Log.d(
+                                        TAG,
+                                        "Initial score created for player $newPlayerId for score type '${scoreType.name}'"
+                                    )
                                 }
-                                navController.navigate(
-                                    Screen.Game.createRoute(
-                                        gameId = gameId.toInt(),
-                                        gameTypeId = thisGameType.value.id
-                                    )
-                                )
                             }
+                            navController.navigate(
+                                Screen.Game.createRoute(
+                                    gameId = gameId.toInt(),
+                                    gameTypeId = thisGameType.value.id
+                                )
+                            )
                         }
-                    )
-                }
-                Spacer(modifier = Modifier.height(40.dp))
+                    }
+                )
             }
+            Spacer(modifier = Modifier.height(40.dp))
+
         } else {
             LoadingMessage(wheelColor = fontColor, themeMode = themeMode)
         }
