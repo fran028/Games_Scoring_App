@@ -1,6 +1,5 @@
  package com.example.games_scoring_app
 
-import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
@@ -17,7 +16,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -43,26 +41,20 @@ import androidx.compose.ui.unit.sp
 import androidx.core.view.WindowCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavType
-import androidx.navigation.compose.currentBackStackEntryAsState
-import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.example.games_scoring_app.Components.LoadingMessage
 import com.example.games_scoring_app.Data.AppDatabase
 import com.example.games_scoring_app.Pages.GamePage
 import com.example.games_scoring_app.Pages.HomePage
-import com.example.games_scoring_app.Pages.RollDicePage
 import com.example.games_scoring_app.Pages.SavedGamesPage
 import com.example.games_scoring_app.Pages.SettingsPage
 import com.example.games_scoring_app.Pages.SetupPage
+import com.example.games_scoring_app.Pages.UtilitiesPage
 import com.example.games_scoring_app.Theme.LeagueGothic
 import com.example.games_scoring_app.Theme.black
 import com.example.games_scoring_app.Theme.blue
 import com.example.games_scoring_app.Theme.white
 import com.example.games_scoring_app.ui.theme.Games_Scoring_AppTheme
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
-import kotlin.collections.toTypedArray
-import kotlin.text.split
-import androidx.core.graphics.toColorInt
 
 
  class MainActivity : ComponentActivity() {
@@ -178,16 +170,23 @@ fun MainScreen() {
                     route = Screen.SetUp.route,
                     arguments = listOf(
                         navArgument("gameType") { type = NavType.IntType },
-                        navArgument("gameColor") { type = NavType.StringType }
+                        navArgument("gameColor") { type = NavType.StringType },
+                        navArgument("playerNames") {
+                            type = NavType.StringType
+                            nullable = true
+                            defaultValue = null
+                        }
                     )
                 ) { backStackEntry ->
                     val gameType = backStackEntry.arguments?.getInt("gameType") ?: 0
                     val hex = backStackEntry.arguments?.getString("gameColor") ?: blue.value.toString(16)
                     val color = Color(hex.toULong(16))
+                    val playerNamesString = backStackEntry.arguments?.getString("playerNames")
                     SetupPage(
                         navController = navController,
                         gameType = gameType,
-                        gameColor = color
+                        gameColor = color,
+                        existingPlayerNames = playerNamesString
                     )
                 }
                 composable(Screen.SavedGames.route) {
@@ -195,13 +194,20 @@ fun MainScreen() {
                         navController = navController,
                     )
                 }
-                composable(Screen.RollDice.route) {
-                    RollDicePage(
-                        navController = navController,
-                    )
-                }
                 composable(Screen.Settings.route) {
                     SettingsPage(navController = navController)
+                }
+                composable(
+                    route = Screen.Utilities.route,
+                    arguments = listOf(
+                        navArgument("utilityId") { type = NavType.IntType },
+                    )
+                ) { backStackEntry ->
+                    val utilityId = backStackEntry.arguments?.getInt("utilityId") ?: 0
+                    UtilitiesPage(
+                        navController = navController,
+                        utilityId = utilityId
+                    )
                 }
             }
         }

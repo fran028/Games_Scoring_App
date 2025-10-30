@@ -40,6 +40,7 @@ import com.example.games_scoring_app.Components.LastGameBox
 import com.example.games_scoring_app.R
 import com.example.games_scoring_app.Components.PageTitle
 import com.example.games_scoring_app.Components.ScoreBoardBox
+import com.example.games_scoring_app.Components.UtilitiesBox
 import com.example.games_scoring_app.Components.WidgetTitle
 import com.example.games_scoring_app.Data.AppDatabase
 import com.example.games_scoring_app.Data.GameStats
@@ -242,13 +243,6 @@ fun HomePage(navController: NavController) {
                         Spacer(modifier = Modifier.height(24.dp))
                     }
                 }
-                /*ButtonBar(
-                    text = "ROLL DICE",
-                    bgcolor = yellow,
-                    height = 48.dp,
-                    textcolor = black,
-                    onClick = { navController.navigate(Screen.RollDice.route) },
-                )*/
             } else {
                 Text(
                     text = "Loading ... ",
@@ -262,8 +256,60 @@ fun HomePage(navController: NavController) {
                     textAlign = TextAlign.Center
                 )
             }
-            Spacer(modifier = Modifier.height(20.dp))
         }
+        Spacer(modifier = Modifier.height(16.dp))
+        Text(
+            text = "Utilities",
+            fontFamily = RobotoCondensed,
+            fontSize = 36.sp,
+            color = fontColor,
+            modifier = Modifier
+                .padding(horizontal = 16.dp)
+                .fillMaxWidth()
+                .align(Alignment.CenterHorizontally),
+            textAlign = TextAlign.Left
+        )
+        Spacer(modifier = Modifier.height(10.dp))
+        Column(Modifier.padding(horizontal = 16.dp)) {
+            // Dice Roller Button
+            UtilitiesBox(
+                title = "DICE ROLLER",
+                bgcolor = darkgray,
+                accentColor = cream,
+                textcolor = buttonColor,
+                onClick = {
+                    navController.navigate(Screen.Utilities.createRoute(1))
+                },
+                icon = R.drawable.dices,
+                description = "Roll some dice and see what happens!"
 
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            UtilitiesBox(
+                title = "COIN TOSSER",
+                bgcolor = darkgray,
+                accentColor = cream,
+                textcolor = buttonColor,
+                onClick = {
+                    navController.navigate(Screen.Utilities.createRoute(2))
+                },
+                icon = R.drawable.coin_toss,
+                description = "Toss a coin to see if it lands on heads or tails.",
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            UtilitiesBox(
+                title = "TIMER",
+                bgcolor = darkgray,
+                accentColor = cream,
+                textcolor = buttonColor,
+                onClick = {
+                    navController.navigate(Screen.Utilities.createRoute(3))
+                },
+                icon = R.drawable.sand_clock,
+                description = "Count down timer",
+            )
+        }
+        // --- END: ADDED UTILITIES SECTION ---
+        Spacer(modifier = Modifier.height(40.dp)) // Add some space at the bottom
     }
 }

@@ -90,7 +90,7 @@ import kotlinx.coroutines.launch
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun SetupPage(navController: NavController, gameType: Int, gameColor: Color) {
+fun SetupPage(navController: NavController, gameType: Int, gameColor: Color, existingPlayerNames: String?) {
     val TAG  = "SetupPage"
     Log.d(TAG, "SetupPage called")
     Log.d(TAG, "match_type: $gameType")
@@ -132,6 +132,8 @@ fun SetupPage(navController: NavController, gameType: Int, gameColor: Color) {
     val showSetup = remember { mutableStateOf(false) }
     Log.d(TAG, "Variables initialize")
 
+
+
     LaunchedEffect(key1 = Unit) {
         Log.d(TAG, "First LaunchedEffect called")
         gameTypesViewModel.getAllGameTypes()
@@ -148,15 +150,22 @@ fun SetupPage(navController: NavController, gameType: Int, gameColor: Color) {
             if (foundGameType != null) {
                 thisGameType.value = foundGameType // Update the State
 
-                // Update the state here. Since minPlayers is a key, this effect will re-run
-                // when thisGameType is set and minPlayers changes from its initial value.
-                selectedPlayerCount = minPlayers
+                val initialPlayerNames = if (!existingPlayerNames.isNullOrEmpty()) {
+                    existingPlayerNames.split(",")
+                } else {
+                    null
+                }
+
+                selectedPlayerCount = initialPlayerNames?.size ?: minPlayers
+
 
                 Log.d(TAG, "selectedPlayerCount set to: $selectedPlayerCount")
                 names.clear()
                 // Initialize the names list with empty strings up to the max player count
-                repeat(foundGameType.maxPlayers) {
-                    names.add("")
+                repeat(foundGameType.maxPlayers) { index ->
+                    // If we have an existing name for this index, use it. Otherwise, use an empty string.
+                    val name = initialPlayerNames?.getOrNull(index) ?: ""
+                    names.add(name)
                 }
                 kotlinx.coroutines.delay(1000) // Consider if this delay is necessary
                 showSetup.value = true

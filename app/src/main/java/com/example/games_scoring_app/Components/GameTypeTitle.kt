@@ -97,7 +97,7 @@ fun GameTypeTitle(
             Image(
                 painter = painterResource(id = icon),
                 contentDescription = "GameType Icon Right",
-                modifier = Modifier.size(26.dp) // Icon size can be larger now
+                modifier = Modifier.size(32.dp)
             )
         }
     }

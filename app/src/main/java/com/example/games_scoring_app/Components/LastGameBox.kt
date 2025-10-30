@@ -96,14 +96,16 @@ fun LastGameBox(
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 // Date Text
-                Text(
-                    text = "($daysSinceLastPlayed)",
-                    style = TextStyle(
-                        fontFamily = RobotoCondensed,
-                        color = textcolor.copy(alpha = 0.7f), // Make it slightly less prominent
-                        fontSize = 18.sp,
+                if(daysSinceLastPlayed != "") {
+                    Text(
+                        text = "($daysSinceLastPlayed)",
+                        style = TextStyle(
+                            fontFamily = RobotoCondensed,
+                            color = textcolor.copy(alpha = 0.7f), // Make it slightly less prominent
+                            fontSize = 18.sp,
+                        )
                     )
-                )
+                }
             }
         }
 

@@ -198,28 +198,29 @@ private fun PlayerLevelColumn(
             )
         }
         Spacer(modifier = Modifier.height(6.dp))
-        // This box now represents the player's current level number
-        Box(
-            modifier = Modifier
-                .width(width)
-                .height(45.dp)
-                .background(
-                    buttonColor,
-                    shape = RoundedCornerShape(7.5.dp)
+        for (i in 0 until currentLevel) {
+            val level = i + 1
+            Box(
+                modifier = Modifier
+                    .width(width)
+                    .height(45.dp)
+                    .background(
+                        buttonColor,
+                        shape = RoundedCornerShape(7.5.dp)
+                    )
+                    .padding(2.5.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = if( level == currentLevel) level.toString() else "",
+                    fontFamily = LeagueGothic,
+                    fontSize = 32.sp,
+                    color = buttonFontColor,
+                    textAlign = TextAlign.Center,
                 )
-                .padding(2.5.dp),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(
-                text = currentLevel.toString(),
-                fontFamily = LeagueGothic,
-                fontSize = 32.sp,
-                color = buttonFontColor,
-                textAlign = TextAlign.Center,
-            )
+            }
+            Spacer(modifier = Modifier.height(6.dp))
         }
-
-        Spacer(modifier = Modifier.height(6.dp))
 
         Box(
             modifier = Modifier

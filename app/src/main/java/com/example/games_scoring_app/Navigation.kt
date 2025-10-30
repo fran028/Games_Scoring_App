@@ -13,11 +13,17 @@ sealed class Screen(val route: String) {
             return "Game/$gameId/$gameTypeId"
         }
     }
-    object SetUp : Screen("SetUp/{gameType}/{gameColor}"){
+    object SetUp : Screen("SetUp/{gameType}/{gameColor}?playerNames={playerNames}"){
         fun createRoute(gameType: Int?, gameColor: Color) = "SetUp/$gameType/${gameColor.value.toString(16)}"
+        fun createRouteWithPlayers(gameType: Int, gameColor: Color, playerNames: List<String>): String {
+            val names = playerNames.joinToString(",")
+            return "SetUp/$gameType/${gameColor.value.toString(16)}?playerNames=$names"
+        }
     }
     object SavedGames : Screen("SavedGames")
-    object RollDice : Screen("RollDice")
     object Settings : Screen("Settings")
+    object Utilities : Screen("Utilities/{utilityId}"){
+        fun createRoute(utilityId: Int) = "Utilities/$utilityId"
+    }
 
 }

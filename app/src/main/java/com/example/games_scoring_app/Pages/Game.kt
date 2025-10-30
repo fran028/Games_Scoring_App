@@ -8,6 +8,7 @@ import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -41,7 +42,9 @@ import com.example.games_scoring_app.Games.TrucoScoreboard
 import com.example.games_scoring_app.R
 import com.example.games_scoring_app.Screen
 import com.example.games_scoring_app.Theme.black
+import com.example.games_scoring_app.Theme.blue
 import com.example.games_scoring_app.Theme.cream
+import com.example.games_scoring_app.Theme.green
 import com.example.games_scoring_app.Theme.white
 import com.example.games_scoring_app.Theme.yellow
 import com.example.games_scoring_app.Viewmodel.*
@@ -147,7 +150,7 @@ fun GamePage(navController: NavController, gameId: Int, gameTypeId: Int ) {
             Log.d(TAG, "Updating score for Player ID: ${scoreToUpdate.id_player}, New Score: ${scoreToUpdate.score}")
         }
     }
-    // --- FIX: Wrap the ViewModel call in a coroutine ---
+
     val onDeleteScore: (Scores) -> Unit = { scoreToDelete ->
         coroutineScope.launch { // This moves the operation to a background thread
             scoresViewModel.deleteScore(scoreToDelete)
@@ -156,13 +159,19 @@ fun GamePage(navController: NavController, gameId: Int, gameTypeId: Int ) {
 
 
 
-    val titelImage = remember(gameType?.name) { // Update image when gameType changes
+    val titelImage = remember(gameType?.name) {
         when (gameType?.name) {
             "Generala" -> mutableStateOf(R.drawable.dice_far)
             "Truco" -> mutableStateOf(R.drawable.fondo_cartas_truco)
             "Points", "Ranking", "Levels" -> mutableStateOf(R.drawable.papers)
             else -> mutableStateOf(R.drawable.fondo_cartas_truco) // Default image
         }
+    }
+    val accentColor = when (gameType?.name) {
+        "Generala" -> blue
+        "Truco" -> yellow
+        "Points", "Ranking", "Levels" -> green
+        else -> blue
     }
 
     val backgroundColor = if (themeMode == 0) black else cream
@@ -182,35 +191,67 @@ fun GamePage(navController: NavController, gameId: Int, gameTypeId: Int ) {
             WidgetTitle(gameType!!.name.uppercase(), titelImage.value, navController)
             Spacer(modifier = Modifier.height(20.dp))
 
-            Column(modifier = Modifier.padding(horizontal = 20.dp)) {
-                ButtonBar(
-                    text = "NEW GAME",
-                    bgcolor = yellow,
-                    height = 48.dp,
-                    textcolor = black,
-                    onClick = {
-                        Log.d(TAG, "NEW GAME button clicked")
-                        coroutineScope.launch {
-                            // 1. Create a new game with the same type
-                            val newGame = Games(id_GameType = gameTypeId)
-                            val newGameId = gamesViewModel.addNewGame(newGame)
+            Column(modifier = Modifier.padding(horizontal = 16.dp).fillMaxWidth()) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    ButtonBar(
+                        text = "RESTART",
+                        bgcolor = green,
+                        height = 64.dp,
+                        textcolor = white,
+                        width = 175.dp,
+                        onClick = {
+                            Log.d(TAG, "NEW GAME button clicked")
+                            coroutineScope.launch {
+                                // 1. Create a new game with the same type
+                                val newGame = Games(id_GameType = gameTypeId)
+                                val newGameId = gamesViewModel.addNewGame(newGame)
 
-                            // 2. Create players for the new game. No initial scores are created here,
-                            // the scoreboard will handle creating them as needed.
-                            val newPlayerNames = playersWithScores.map { it.player.name }.toTypedArray()
-                            newPlayerNames.forEach { name ->
-                                val newPlayer = Players(id_game = newGameId.toInt(), name = name)
-                                playersViewModel.addNewPlayer(newPlayer)
-                            }
-                            Log.d(TAG, "Created new game with ID: $newGameId")
+                                // 2. Create players for the new game. No initial scores are created here,
+                                // the scoreboard will handle creating them as needed.
+                                val newPlayerNames =
+                                    playersWithScores.map { it.player.name }.toTypedArray()
+                                newPlayerNames.forEach { name ->
+                                    val newPlayer =
+                                        Players(id_game = newGameId.toInt(), name = name)
+                                    playersViewModel.addNewPlayer(newPlayer)
+                                }
+                                Log.d(TAG, "Created new game with ID: $newGameId")
 
-                            // 3. Navigate to the new game screen and remove the old one from the back stack
-                            navController.navigate(Screen.Game.createRoute(newGameId.toInt(), gameTypeId)) {
-                                popUpTo(Screen.Game.route) { inclusive = true }
+                                // 3. Navigate to the new game screen and remove the old one from the back stack
+                                navController.navigate(
+                                    Screen.Game.createRoute(
+                                        newGameId.toInt(),
+                                        gameTypeId
+                                    )
+                                ) {
+                                    popUpTo(Screen.Game.route) { inclusive = true }
+                                }
                             }
                         }
-                    }
-                )
+                    )
+
+                    ButtonBar(
+                        text = "EDIT",
+                        bgcolor = blue,
+                        height = 64.dp,
+                        textcolor = white,
+                        width = 175.dp,
+                        onClick = {
+                            Log.d(TAG, "Edit button clicked")
+                            val currentPlayerNames = playersWithScores.map{it.player.name}
+                            navController.navigate(
+                                Screen.SetUp.createRouteWithPlayers(
+                                    gameTypeId,
+                                    accentColor,
+                                    currentPlayerNames
+                                )
+                            )
+                        }
+                    )
+                }
                 Spacer(modifier = Modifier.height(20.dp))
 
                 // Pass all relevant data to the scoreboards
